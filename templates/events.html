@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Events | GFG Club{% endblock %}
+
+{% block content %}
+<main class="page-shell events-page-shell">
+    <section class="page-hero glass-card events-hero" data-animate="fade-up">
+        <p class="eyebrow">Club Events</p>
+        <h1 class="gradient-title">Upcoming Events</h1>
+        <p class="section-copy">Track the latest workshops, coding sessions, and club activities here.</p>
+    </section>
+
+    <section class="glass-card events-status-panel" data-animate="fade-up">
+        {% if events %}
+            <div class="event-grid">
+                {% for event in events %}
+                    <article class="glass-card event-card data-card">
+                        <div class="card-meta">
+                            <div class="date-badge">
+                                <span>{{ event.event_date[8:10] }}</span>
+                                <small>{{ event.event_date[5:7] }}/{{ event.event_date[:4] }}</small>
+                            </div>
+                            <span class="status-pill">{{ event.registration_status_label }}</span>
+                        </div>
+                        <h2>{{ event.title }}</h2>
+                        <p>{{ event.description }}</p>
+                        <div class="detail-grid">
+                            <div><span class="meta-label">Location</span><strong>{{ event.venue }}</strong></div>
+                            <div><span class="meta-label">Format</span><strong>{{ event.format }}</strong></div>
+                            <div><span class="meta-label">Category</span><strong>{{ event.category }}</strong></div>
+                            <div><span class="meta-label">Registrations</span><strong>{{ event.registration_count }} / {{ event.registration_limit if event.registration_limit else 'No limit' }}</strong></div>
+                        </div>
+                        <div class="progress-bar"><span style="width: {{ event.registration_progress }}%;"></span></div>
+                        <div class="cta-row">
+                            <a class="button button-primary" href="{{ url_for('event_detail', event_id=event.id) }}">Open Event</a>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <article class="events-empty-state">
+                <h2>No Events scheduled</h2>
+                <p>New club events will appear here once they are added.</p>
+            </article>
+        {% endif %}
+    </section>
+</main>
+{% endblock %}

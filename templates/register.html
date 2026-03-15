@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Register Team | GfG Challenge Portal{% endblock %}
+
+{% block content %}
+<main class="page-shell form-page">
+    <section class="form-layout">
+        <aside class="form-side-panel glass-card" data-animate="fade-up">
+            <span class="eyebrow">Team Registration</span>
+            <h1 class="gradient-title">Create a team entry with enough detail to move fast later.</h1>
+            <p class="section-copy">Register one team entry clearly. Keep the member list and team direction clear so event coordination stays simple.</p>
+            <div class="access-stack form-side-stack">
+                <div class="access-row"><span class="chip">Step 1</span><strong>Name the team</strong></div>
+                <div class="access-row"><span class="chip">Step 2</span><strong>Add members and stack</strong></div>
+                <div class="access-row"><span class="chip">Step 3</span><strong>Describe the vision clearly</strong></div>
+            </div>
+        </aside>
+
+        <section class="form-panel glass-card" data-animate="fade-up">
+            <div class="section-head form-head">
+                <div>
+                    <p class="eyebrow">Registration Form</p>
+                    <h2 class="gradient-title">Create a team entry</h2>
+                </div>
+            </div>
+
+            <form class="form-grid modern-form" method="post">
+                <label class="field">
+                    <input name="team_name" type="text" placeholder=" " value="{{ request.form.get('team_name', '') }}" required>
+                    <span>Team name</span>
+                </label>
+                <label class="field">
+                    <input name="lead_name" type="text" placeholder=" " autocomplete="name" value="{{ request.form.get('lead_name', '') }}" required>
+                    <span>Team lead</span>
+                </label>
+                <label class="field">
+                    <input name="email" type="email" placeholder=" " autocomplete="email" value="{{ request.form.get('email', '') }}" required>
+                    <span>Contact email</span>
+                </label>
+                <label class="field">
+                    <input name="members" type="text" placeholder=" " value="{{ request.form.get('members', '') }}" required>
+                    <span>Team members</span>
+                </label>
+                <p class="field-hint full-span">Example: Alice, Bob, Charan, Deepa</p>
+                <label class="field full-span">
+                    <input name="stack" type="text" placeholder=" " value="{{ request.form.get('stack', '') }}" required>
+                    <span>Tech stack</span>
+                </label>
+                <label class="field full-span">
+                    <textarea name="vision" rows="6" placeholder=" " required>{{ request.form.get('vision', '') }}</textarea>
+                    <span>Product vision</span>
+                </label>
+                <p class="field-hint full-span">Keep this to the core problem, target users, and your main solution idea.</p>
+                <button class="button button-primary glow-button full-span" type="submit" data-loading-text="Creating team...">Create Team Entry</button>
+            </form>
+        </section>
+    </section>
+</main>
+{% endblock %}

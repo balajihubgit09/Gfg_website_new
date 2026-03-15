@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}GfG Club Portal{% endblock %}
+
+{% block content %}
+<main class="page-shell login-shell signup-shell">
+    <section class="login-grid signup-grid">
+        <section class="glass-card login-panel signup-panel" data-animate="fade-up">
+            <p class="eyebrow">Welcome Sequence</p>
+            <h1 class="gradient-title">Create your club account and enter the portal.</h1>
+            <p class="section-copy">Use your real name, email, and phone number so your registrations and password recovery stay linked to the right account.</p>
+
+            <form class="form-grid modern-form" method="post">
+                <label class="field full-span">
+                    <input type="text" name="name" placeholder=" " autocomplete="name" value="{{ request.form.get('name', '') }}" required>
+                    <span>Full Name</span>
+                </label>
+                <label class="field full-span">
+                    <input type="email" name="email" placeholder=" " autocomplete="email" value="{{ request.form.get('email', '') }}" required>
+                    <span>Email</span>
+                </label>
+                <label class="field full-span">
+                    <input type="tel" name="phone_number" placeholder=" " autocomplete="tel" value="{{ request.form.get('phone_number', '') }}" required>
+                    <span>Phone Number</span>
+                </label>
+                <p class="field-hint full-span">Store the number in international format when possible, for example `+919876543210`.</p>
+                <label class="field full-span password-field">
+                    <input id="signup-password" type="password" name="password" placeholder=" " autocomplete="new-password" minlength="8" required>
+                    <span>Password</span>
+                    <button class="password-toggle" type="button" data-password-toggle="signup-password" aria-label="Show password">Show</button>
+                </label>
+                <p class="field-hint full-span">Use at least 8 characters so the account is harder to guess.</p>
+                <button class="button button-primary glow-button" type="submit" data-loading-text="Creating account...">Create Account</button>
+            </form>
+        </section>
+
+        <aside class="login-side-stack">
+            <article class="glass-card credential-card signup-side-card" data-animate="fade-up">
+                <span class="chip">First Stop</span>
+                <h2>New visitors start here.</h2>
+                <p>Create your account once, and the portal will keep your workspace available for events, resources, and future visits.</p>
+            </article>
+            <article class="glass-card credential-card signup-side-card" data-animate="fade-up">
+                <span class="chip">What you unlock</span>
+                <p>Account access, form shortcuts, a personal workspace, and password reset through OTP on your registered phone number.</p>
+                <div class="meta-list">
+                    <span>Session based</span>
+                    <span>Hashed passwords</span>
+                    <span>Phone OTP recovery</span>
+                </div>
+            </article>
+        </aside>
+    </section>
+</main>
+{% endblock %}

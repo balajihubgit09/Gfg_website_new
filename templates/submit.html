@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Submit Project | GfG Challenge Portal{% endblock %}
+
+{% block content %}
+<main class="page-shell form-page">
+    <section class="form-layout">
+        <aside class="form-side-panel glass-card" data-animate="fade-up">
+            <span class="eyebrow">Project Submission</span>
+            <h1 class="gradient-title">Submit project details clearly so review stays fast.</h1>
+            <p class="section-copy">This form does not upload files. It records your selected team, project summary, key features, repository link, and demo link in the database.</p>
+            <div class="access-stack form-side-stack">
+                <div class="access-row"><span class="chip">Required</span><strong>Select a registered team</strong></div>
+                <div class="access-row"><span class="chip">Required</span><strong>Write a short and clear summary</strong></div>
+                <div class="access-row"><span class="chip">Required</span><strong>Provide working repository and demo URLs</strong></div>
+            </div>
+        </aside>
+
+        <section class="form-panel glass-card" data-animate="fade-up">
+            <div class="section-head form-head">
+                <div>
+                    <p class="eyebrow">Submission Form</p>
+                    <h2 class="gradient-title">Submit project details</h2>
+                </div>
+            </div>
+
+            <form class="form-grid modern-form" method="post">
+                <label class="field">
+                    <select name="team_id" required>
+                        <option value="" disabled {% if not request.form.get('team_id') %}selected{% endif %}></option>
+                        {% for team in teams %}
+                            <option value="{{ team.id }}" {% if request.form.get('team_id') == (team.id|string) %}selected{% endif %}>{{ team.team_name }}</option>
+                        {% endfor %}
+                    </select>
+                    <span>Team</span>
+                </label>
+                <label class="field">
+                    <input name="project_name" type="text" placeholder=" " value="{{ request.form.get('project_name', '') }}" required>
+                    <span>Project name</span>
+                </label>
+                <label class="field full-span">
+                    <textarea name="summary" rows="4" placeholder=" " required>{{ request.form.get('summary', '') }}</textarea>
+                    <span>Project summary</span>
+                </label>
+                <label class="field full-span">
+                    <textarea name="features" rows="4" placeholder=" " required>{{ request.form.get('features', '') }}</textarea>
+                    <span>Key features</span>
+                </label>
+                <label class="field">
+                    <input name="repo_url" type="url" placeholder=" " inputmode="url" value="{{ request.form.get('repo_url', '') }}" required>
+                    <span>Repository URL</span>
+                </label>
+                <label class="field">
+                    <input name="demo_url" type="url" placeholder=" " inputmode="url" value="{{ request.form.get('demo_url', '') }}" required>
+                    <span>Demo URL</span>
+                </label>
+                <p class="field-hint full-span">Make sure both links open correctly before submitting. This form saves links and text details only.</p>
+                <button class="button button-primary glow-button full-span" type="submit" data-loading-text="Submitting project...">Submit Project</button>
+            </form>
+        </section>
+    </section>
+</main>
+{% endblock %}

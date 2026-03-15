@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}About | GFG Club{% endblock %}
+
+{% block content %}
+<main class="page-shell">
+    <section class="page-hero glass-card" data-animate="fade-up">
+        <p class="eyebrow">About GFG Club</p>
+        <h1 class="gradient-title">A student coding community focused on learning, building, and growing together.</h1>
+        <p class="section-copy">GFG Club brings students together through coding practice, workshops, events, and peer learning. The goal is simple: help students become better problem solvers and stronger builders.</p>
+    </section>
+
+    <section class="card-grid columns-3" data-animate="fade-up">
+        <article class="glass-card compact-card data-card">
+            <span class="chip">Mission</span>
+            <h3>What we do</h3>
+            <p>We create a practical space for students to improve coding skills, collaborate on ideas, and stay ready for contests, events, and interviews.</p>
+        </article>
+        <article class="glass-card compact-card data-card">
+            <span class="chip">Vision</span>
+            <h3>Where we are going</h3>
+            <p>We want to build a strong campus tech culture where students consistently learn, innovate, and contribute to meaningful technical work.</p>
+        </article>
+        <article class="glass-card compact-card data-card">
+            <span class="chip">Community</span>
+            <h3>How we grow</h3>
+            <p>Through team participation, regular events, resource sharing, and student-led support, members grow faster together than alone.</p>
+        </article>
+    </section>
+
+    <section class="content-grid" data-animate="fade-up">
+        <article class="glass-card compact-card data-card">
+            <span class="chip">Club Activities</span>
+            <h2>What members can expect</h2>
+            <div class="meta-list">
+                <span>Coding contests</span>
+                <span>Workshops</span>
+                <span>Project building</span>
+                <span>Interview preparation</span>
+                <span>Team collaboration</span>
+                <span>Technical sessions</span>
+            </div>
+        </article>
+
+        <article class="glass-card compact-card data-card">
+            <span class="chip">Leadership</span>
+            <h2>Club structure</h2>
+            <p>{{ about.faculty_coordinator }}</p>
+            <div class="meta-list">
+                {% for item in about.core_team %}
+                    <span>{{ item }}</span>
+                {% endfor %}
+            </div>
+        </article>
+    </section>
+
+    <section class="glass-section glass-card" data-animate="fade-up">
+        <div class="section-head">
+            <div>
+                <p class="eyebrow">Why Join</p>
+                <h2 class="gradient-title">Learn consistently. Build confidently.</h2>
+            </div>
+        </div>
+        <div class="card-grid columns-3">
+            {% for item in about.mission %}
+                <article class="glass-card compact-card data-card">
+                    <span class="chip">Focus</span>
+                    <p>{{ item }}</p>
+                </article>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="glass-section glass-card team-showcase-section" data-animate="fade-up">
+        <div class="section-head">
+            <div>
+                <p class="eyebrow">OUR TEAM IS HERE</p>
+                <h2 class="gradient-title">Meet the coordinators behind the club.</h2>
+            </div>
+        </div>
+        <div class="team-showcase-grid">
+            {% for member in team_members %}
+                <article class="glass-card team-member-card">
+                    <div class="team-photo-shell" aria-hidden="true">
+                        <span>{{ member.initials }}</span>
+                    </div>
+                    <div class="team-member-copy">
+                        <h3>{{ member.name }}</h3>
+                        <p>{{ member.role }}</p>
+                        <div class="meta-list">
+                            <span>{{ member.email }}</span>
+                        </div>
+                    </div>
+                </article>
+            {% else %}
+                <article class="glass-card compact-card data-card empty-card">
+                    <h3>No team members added yet</h3>
+                    <p>Add coordinator accounts to show the club team here.</p>
+                </article>
+            {% endfor %}
+        </div>
+    </section>
+
+</main>
+{% endblock %}

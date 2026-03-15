@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}{{ resource.title }} | Resources{% endblock %}
+
+{% block content %}
+<main class="page-shell">
+    <section class="page-hero glass-card" data-animate="fade-up">
+        <p class="eyebrow">Resource Detail</p>
+        <h1 class="gradient-title">{{ resource.title }}</h1>
+        <p class="section-copy">{{ resource.summary }}</p>
+    </section>
+
+    <section class="glass-card resource-card detailed" data-animate="fade-up">
+        <div class="meta-list"><span>{{ resource.category }}</span><span>{{ resource.track }}</span><span>{{ resource.difficulty }}</span><span>{{ resource.duration }}</span></div>
+        <a class="button button-primary glow-button" href="{{ resource.url }}" target="_blank" rel="noreferrer">Open Resource</a>
+    </section>
+</main>
+{% endblock %}

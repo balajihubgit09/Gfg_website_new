@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Coordinator Setup | GFG Club{% endblock %}
+
+{% block content %}
+<main class="page-shell login-shell signup-shell">
+    <section class="login-grid signup-grid">
+        <section class="glass-card login-panel signup-panel" data-animate="fade-up">
+            <p class="eyebrow">Coordinator Setup</p>
+            <h1 class="gradient-title">Create the first coordinator account.</h1>
+            <p class="section-copy">This page is available only until the first coordinator is created. That account receives full admin access to website settings, members, events, resources, and teams.</p>
+
+            <form class="form-grid modern-form" method="post">
+                <label class="field full-span">
+                    <input type="text" name="name" placeholder=" " autocomplete="name" value="{{ request.form.get('name', '') }}" required>
+                    <span>Coordinator Name</span>
+                </label>
+                <label class="field full-span">
+                    <input type="email" name="email" placeholder=" " autocomplete="email" value="{{ request.form.get('email', '') }}" required>
+                    <span>Coordinator Email</span>
+                </label>
+                <label class="field full-span">
+                    <input type="tel" name="phone_number" placeholder=" " autocomplete="tel" value="{{ request.form.get('phone_number', '') }}" required>
+                    <span>Phone Number</span>
+                </label>
+                <p class="field-hint full-span">Use the number that should receive Twilio OTP messages.</p>
+                <label class="field full-span password-field">
+                    <input id="admin-setup-password" type="password" name="password" placeholder=" " autocomplete="new-password" minlength="8" required>
+                    <span>Password</span>
+                    <button class="password-toggle" type="button" data-password-toggle="admin-setup-password" aria-label="Show password">Show</button>
+                </label>
+                <p class="field-hint full-span">Use a strong password. This account controls the entire site.</p>
+                <button class="button button-primary glow-button" type="submit" data-loading-text="Creating coordinator...">Create Coordinator</button>
+            </form>
+        </section>
+
+        <aside class="login-side-stack">
+            <article class="glass-card credential-card signup-side-card" data-animate="fade-up">
+                <span class="chip">Full Access</span>
+                <h2>What this account controls</h2>
+                <div class="meta-list">
+                    <span>Website settings</span>
+                    <span>User roles</span>
+                    <span>Teams</span>
+                                        <span>Events</span>
+                    <span>Resources</span>
+                </div>
+            </article>
+        </aside>
+    </section>
+</main>
+{% endblock %}

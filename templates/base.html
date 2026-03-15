@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}GfG Challenge Portal{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body data-theme="dark">
+    <div class="app-bg" aria-hidden="true">
+        <div class="bg-gradient"></div>
+        <div class="bg-orb orb-a"></div>
+        <div class="bg-orb orb-b"></div>
+        <div class="bg-orb orb-c"></div>
+        <div class="bg-orb orb-d"></div>
+        <div class="bg-grid"></div>
+        <div class="bg-noise"></div>
+    </div>
+
+    <div class="site-shell">
+        <div class="page-brand-mark" data-animate="fade-up" data-admin-trigger data-admin-url="{{ url_for('admin_login') }}">
+            <img src="{{ url_for('club_assets', filename='RIT_Logo copy.png') }}" alt="RIT logo" class="page-brand-logo">
+        </div>
+
+        <header class="site-header glass-card" data-animate="fade-up">
+            <a class="brand" href="{{ url_for('home') }}">
+                <span class="brand-logos">
+                    <img src="{{ url_for('club_assets', filename='gfg_logo.png') }}" alt="GFG club logo" class="brand-logo brand-logo-club">
+                </span>
+                <span class="brand-copy">
+                    <strong>GFG Club</strong>
+                </span>
+            </a>
+
+            <div class="header-actions">
+                <nav class="nav" aria-label="Primary navigation">
+                    <a href="{{ url_for('home') }}">Home</a>
+                    <a href="{{ url_for('events') }}">Events</a>
+                    <a href="{{ url_for('resources') }}">Resources</a>
+                    <a href="{{ url_for('leaderboard') }}">Leaderboard</a>
+                    <a href="{{ url_for('faq') }}">FAQ</a>
+                    <a href="{{ url_for('about') }}">About</a>
+                </nav>
+
+                <div class="header-tools">
+                    <div class="auth-links" aria-label="Account access">
+                        {% if current_user %}
+                            <a class="header-auth-link" href="{{ url_for('profile') }}">Profile</a>
+                            <a class="header-auth-link header-auth-link-primary" href="{{ url_for('logout') }}">Logout</a>
+                        {% else %}
+                            <a class="header-auth-link header-auth-link-primary" href="{{ url_for('signup') }}">Create Account</a>
+                        {% endif %}
+                    </div>
+                    <div class="overflow-menu">
+                        <button
+                            class="overflow-trigger"
+                            type="button"
+                            aria-label="Open more options"
+                            aria-expanded="false"
+                            aria-controls="overflow-panel"
+                        >
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </button>
+
+                        <div class="settings-panel glass-card overflow-panel" id="overflow-panel" hidden>
+                            {% if quick_open_registration_event %}
+                                <div class="settings-group">
+                                    <span class="settings-label">Open Registration</span>
+                                    <a class="settings-link static-row header-pill" href="{{ url_for('event_detail', event_id=quick_open_registration_event.id) }}">
+                                        Now accepting: {{ quick_open_registration_event.title }}
+                                    </a>
+                                </div>
+                                <div class="settings-divider"></div>
+                            {% endif %}
+
+                            <div class="settings-group">
+                                <span class="settings-label">Actions</span>
+                                {% if current_user %}
+                                    <a class="settings-link" href="{{ url_for('profile') }}">Profile</a>
+                                {% endif %}
+                            </div>
+
+                            <div class="settings-divider"></div>
+
+                            <div class="settings-group">
+                                <span class="settings-label">Display mode</span>
+                                <button class="theme-option" type="button" data-theme-choice="dark">Night glass</button>
+                                <button class="theme-option" type="button" data-theme-choice="white">Soft light</button>
+                            </div>
+
+                            <div class="settings-divider"></div>
+
+                            <div class="settings-group">
+                                <span class="settings-label">Quick access</span>
+                                {% if quick_open_registration_event %}
+                                    <a class="settings-link" href="{{ url_for('event_detail', event_id=quick_open_registration_event.id) }}">{{ quick_open_registration_event.title }}</a>
+                                {% elif quick_next_event %}
+                                    <a class="settings-link" href="{{ url_for('event_detail', event_id=quick_next_event.id) }}">{{ quick_next_event.title }}</a>
+                                {% endif %}
+                                {% if quick_featured_resource %}
+                                    <a class="settings-link" href="{{ url_for('resource_detail', resource_id=quick_featured_resource.id) }}">{{ quick_featured_resource.title }}</a>
+                                {% endif %}
+                                <a class="settings-link" href="{{ url_for('contact') }}">Contact support</a>
+                                <a class="settings-link" href="{{ url_for('website_guide') }}">Website Guide</a>
+                            </div>
+
+                            <div class="settings-divider"></div>
+
+                            <div class="settings-group">
+                                <span class="settings-label">Workspace</span>
+                                {% if current_user %}
+                                    <a class="settings-link" href="{{ url_for('profile') }}">Profile</a>
+                                    <a class="settings-link settings-link-danger" href="{{ url_for('logout') }}">Logout</a>
+                                {% else %}
+                                    <a class="settings-link" href="{{ url_for('signup') }}">Create account</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <section class="flash-stack" data-animate="fade-up">
+                    {% for category, message in messages %}
+                        <div class="flash glass-card flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </section>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+
+        <footer class="site-footer glass-card" data-animate="fade-up">
+            <div>
+                <strong>&copy; GfG Campus Club RIT</strong>
+                <p>Student challenges, workshops, events, and community learning in one place.</p>
+            </div>
+            <a class="text-link footer-login" href="{{ url_for('signup') }}">Create Account</a>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
+

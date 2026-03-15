@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Participant List | {{ event.title }}{% endblock %}
+
+{% block content %}
+<main class="page-shell participant-list-page">
+    <section class="page-hero glass-card no-print" data-animate="fade-up">
+        <p class="eyebrow">Participant List Generator</p>
+        <h1 class="gradient-title">{{ event.title }}</h1>
+        <p class="section-copy">Choose which admin-defined fields should appear in the participant list, then view, print, or export the structured sheet.</p>
+    </section>
+
+    <section class="glass-card form-panel no-print" data-animate="fade-up">
+        <div class="section-head">
+            <div>
+                <p class="eyebrow">Generate List</p>
+                <h2 class="gradient-title">Choose fields for the list</h2>
+            </div>
+        </div>
+        <form class="form-grid modern-form" method="get">
+            <label class="field full-span list-select-field">
+                <select name="field_id" multiple size="8" required>
+                    {% for field in available_fields %}
+                        <option value="{{ field.id }}" {% if (field.id|string) in selected_field_ids %}selected{% endif %}>{{ field.field_label }}{% if field.field_type == 'select' %} (dropdown){% endif %}</option>
+                    {% endfor %}
+                </select>
+                <span>Select fields to display</span>
+            </label>
+            <p class="field-hint full-span">Only the registration fields created for this event are available here, so the generated list always matches the event form. Hold Ctrl or Cmd to select multiple fields.</p>
+            <div class="cta-row full-span list-actions-row">
+                <button class="button button-primary" type="submit">Generate List</button>
+                <a class="button button-secondary" href="{{ url_for('event_registration_list', event_id=event.id, field_id=selected_field_ids, export='csv') }}">Export CSV</a>
+                <a class="button button-secondary" href="{{ url_for('export_event_pdf', event_id=event.id, field_id=selected_field_ids) }}">Generate PDF Sheet</a>
+            </div>
+        </form>
+    </section>
+
+    <section class="glass-card paper-sheet print-sheet" data-animate="fade-up">
+        <div class="paper-header">
+            <div>
+                <p class="eyebrow">Generated Sheet-preview</p>
+                <h2 class="gradient-title">{{ event.title }}</h2>
+                <p class="section-copy">Participant List</p>
+            </div>
+            <div class="paper-meta-stack">
+                <div class="paper-meta">Registered: {{ event.registration_count }} / {{ event.registration_limit if event.registration_limit else 'Unlimited' }}</div>
+                <div class="paper-meta">Remaining slots: {{ event.remaining_slots if event.remaining_slots is not none else 'Unlimited' }}</div>
+                <div class="paper-meta">Event date: {{ event.event_date }}</div>
+            </div>
+        </div>
+
+        {% if selected_fields and participants %}
+            <div class="table-shell participant-table-shell">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>S.No</th>
+                            <th>Submitted At</th>
+                            {% for field in selected_fields %}
+                                <th>{{ field.field_label }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for participant in participants %}
+                            <tr>
+                                <td>{{ participant.serial }}</td>
+                                <td>{{ participant.created_at }}</td>
+                                {% for field in selected_fields %}
+                                    <td>{{ participant.answers.get(field.id|string, '') }}</td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% elif not available_fields %}
+            <article class="glass-card compact-card data-card empty-card"><h3>No registration fields configured</h3><p>This event does not have any admin-defined registration fields yet.</p></article>
+        {% else %}
+            <article class="glass-card compact-card data-card empty-card"><h3>No registrations yet</h3><p>Once participants submit the event form, the generated list will appear here.</p></article>
+        {% endif %}
+    </section>
+</main>
+{% endblock %}

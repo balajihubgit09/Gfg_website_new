@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Resources | GfG Challenge Portal{% endblock %}
+
+{% block content %}
+<main class="page-shell">
+    <section class="page-hero glass-card" data-animate="fade-up">
+        <p class="eyebrow">Learning Resources Hub</p>
+        <h1 class="gradient-title">Coding resources collected in one place.</h1>
+        <p class="section-copy">Browse DSA, interview prep, competitive programming, development, and system design resources without extra filtering steps.</p>
+    </section>
+
+    <section class="resource-grid expanded" data-animate="fade-up">
+        {% for resource in resources %}
+            <article class="glass-card resource-card detailed data-card">
+                <div class="resource-head">
+                    <span class="resource-icon">{{ resource.category[0] }}</span>
+                    <span class="status-pill">{{ resource.category }}</span>
+                </div>
+                <h2>{{ resource.title }}</h2>
+                <p>{{ resource.summary }}</p>
+                <div class="meta-list"><span>{{ resource.track }}</span><span>{{ resource.difficulty }}</span><span>{{ resource.duration }}</span></div>
+                <div class="cta-row">
+                    <a class="button button-secondary" href="{{ url_for('resource_detail', resource_id=resource.id) }}">View Detail</a>
+                    <a class="button button-primary" href="{{ resource.url }}" target="_blank" rel="noreferrer">Open Resource</a>
+                </div>
+            </article>
+        {% else %}
+            <article class="glass-card resource-card detailed data-card empty-card"><h2>No resources available</h2><p>No resources have been added yet.</p></article>
+        {% endfor %}
+    </section>
+</main>
+{% endblock %}

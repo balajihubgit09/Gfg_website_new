@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Access Notice | GfG Challenge Portal{% endblock %}
+
+{% block content %}
+<main class="page-shell admin-access-notice-shell">
+    <section class="glass-card admin-access-notice" data-animate="fade-up">
+        <div class="admin-access-notice-copy">
+            <span class="chip admin-security-chip">Restricted Access</span>
+            <p class="eyebrow">Authentication Boundary</p>
+            <h1 class="gradient-title">ACCESS RESTRICTED! USE ADMIN LOGIN PAGE </h1>
+            <p class="section-copy">These credentials were recognized as an admin or coordinator account, but the participant area cannot open the admin workspace.</p>
+            <p class="section-copy">Use the hidden ADMIN Login page to continue.</p>
+        </div>
+
+        <div class="admin-access-notice-actions">
+            <a class="button button-secondary" href="{{ url_for('home') }}">Back to Home</a>
+        </div>
+    </section>
+</main>
+{% endblock %}

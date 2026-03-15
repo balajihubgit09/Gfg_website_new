@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}{{ event.title }} | Events{% endblock %}
+
+{% block content %}
+<main class="page-shell">
+    <section class="page-hero glass-card" data-animate="fade-up">
+        <p class="eyebrow">Event Detail</p>
+        <h1 class="gradient-title">{{ event.title }}</h1>
+        <p class="section-copy">{{ event.description }}</p>
+    </section>
+
+    <section class="glass-card event-card" data-animate="fade-up">
+        <div class="detail-grid">
+            <div><span class="meta-label">Date</span><strong>{{ event.event_date }}</strong></div>
+            <div><span class="meta-label">Location</span><strong>{{ event.venue }}</strong></div>
+            <div><span class="meta-label">Format</span><strong>{{ event.format }}</strong></div>
+            <div><span class="meta-label">Category</span><strong>{{ event.category }}</strong></div>
+            <div><span class="meta-label">Registrations</span><strong>{{ event.registration_count }} / {{ event.registration_limit if event.registration_limit else 'No limit' }}</strong></div>
+            <div><span class="meta-label">Status</span><strong>{{ event.registration_status_label }}</strong></div>
+        </div>
+        <div class="progress-bar"><span style="width: {{ event.registration_progress }}%;"></span></div>
+    </section>
+
+    <section class="glass-card form-panel" data-animate="fade-up">
+        <div class="section-head">
+            <div>
+                <p class="eyebrow">Event Registration</p>
+                <h2 class="gradient-title">Register for this event</h2>
+            </div>
+        </div>
+
+        {% if registration_closed %}
+            <article class="glass-card compact-card data-card empty-card"><h3>registration is closed</h3><p>The admin has closed registration for this event.</p></article>
+        {% elif registration_is_full %}
+            <article class="glass-card compact-card data-card empty-card"><h3>registration for the event is completed</h3><p>The required number of registrations has already been reached.</p></article>
+        {% elif registration_fields or contact_email_required %}
+            <form class="form-grid modern-form" method="post">
+                {% if contact_email_required %}
+                    <label class="field full-span">
+                        <input name="contact_email" type="email" placeholder=" " value="{{ request.form.get('contact_email', '') }}" required>
+                        <span>Participant Email</span>
+                    </label>
+                {% endif %}
+                {% for field in registration_fields %}
+                    <label class="field {% if field.field_type == 'textarea' %}full-span{% endif %}">
+                        {% if field.field_type == 'select' %}
+                            <select name="field_{{ field.id }}" {% if field.is_required %}required{% endif %}>
+                                <option value="" disabled {% if not request.form.get('field_' ~ field.id) %}selected{% endif %}></option>
+                                {% for option in field.option_values %}
+                                    <option value="{{ option }}" {% if request.form.get('field_' ~ field.id) == option %}selected{% endif %}>{{ option }}</option>
+                                {% endfor %}
+                            </select>
+                        {% else %}
+                            <input name="field_{{ field.id }}" type="text" placeholder=" " value="{{ request.form.get('field_' ~ field.id, '') }}" {% if field.is_required %}required{% endif %}>
+                        {% endif %}
+                        <span>{{ field.field_label }}</span>
+                    </label>
+                {% endfor %}
+                <button class="button button-primary glow-button full-span" type="submit" data-loading-text="Submitting registration...">Submit Registration</button>
+            </form>
+        {% else %}
+            <article class="glass-card compact-card data-card empty-card"><h3>No registration fields configured</h3><p>The admin has not added registration fields or contact details for this event yet.</p></article>
+        {% endif %}
+    </section>
+</main>
+{% endblock %}

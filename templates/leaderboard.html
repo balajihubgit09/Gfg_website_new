@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Leaderboard | GFG Club{% endblock %}
+
+{% block content %}
+<main class="page-shell page-dashboard">
+    <section class="page-hero glass-card" data-animate="fade-up">
+        <p class="eyebrow">Leaderboard</p>
+        <h1 class="gradient-title">Leaderboard tracking is currently disabled.</h1>
+        <p class="section-copy">Scores and streaks are no longer maintained in the database. Final judging or event-based evaluation can be handled outside this page.</p>
+    </section>
+
+    <section class="glass-card events-status-panel" data-animate="fade-up">
+        <article class="events-empty-state">
+            <h2>No active leaderboard</h2>
+            <p>This page is intentionally kept simple until a real scoring workflow is needed.</p>
+        </article>
+    </section>
+</main>
+{% endblock %}

@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | GFG Challenge Portal{% endblock %}
+
+{% block content %}
+<main class="page-shell dashboard-shell admin-dashboard-shell">
+    <section class="page-hero glass-card admin-hero admin-hero-refined" data-animate="fade-up">
+        <div class="page-hero-copy">
+            <p class="eyebrow">Coordinator Dashboard</p>
+            <h1 class="gradient-title">Admin Dashboard</h1>
+            <p class="section-copy">A cleaner control room for registrations, people, events, resources, and team operations.</p>
+        </div>
+        <div class="admin-hero-side">
+            <div class="admin-status-chip">
+                <span class="chip">Live Control</span>
+                <p>Monitor events, people, and resources from one internal workspace.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="metrics-grid admin-metrics admin-metrics-refined" data-animate="fade-up">
+        <article class="metric-card glass-card admin-metric-card"><span>Teams</span><strong class="metric-value" data-count="{{ stats.teams }}">{{ stats.teams }}</strong></article>
+        <article class="metric-card glass-card admin-metric-card"><span>Core Members</span><strong class="metric-value" data-count="{{ stats.core_members }}">{{ stats.core_members }}</strong></article>
+        <article class="metric-card glass-card admin-metric-card"><span>Events</span><strong class="metric-value" data-count="{{ stats.events }}">{{ stats.events }}</strong></article>
+        <article class="metric-card glass-card admin-metric-card"><span>Resources</span><strong class="metric-value" data-count="{{ stats.resources }}">{{ stats.resources }}</strong></article>
+    </section>
+
+    <section class="admin-layout-grid admin-layout-grid-single" data-animate="fade-up">
+        <section class="glass-section glass-card admin-section-card admin-form-card">
+            <div class="section-head admin-section-head">
+                <div>
+                    <p class="eyebrow">Add Event</p>
+                    <h2 class="gradient-title">Publish club events</h2>
+                </div>
+                <p class="section-copy">Set registration rules, contact requirements, field definitions, and limits from one form.</p>
+            </div>
+            <form class="form-grid modern-form admin-event-form" method="post">
+                <input type="hidden" name="action" value="add_event">
+                <label class="field"><input name="title" type="text" placeholder=" " required><span>Title</span></label>
+                <label class="field"><input name="event_date" type="date" placeholder=" " required><span>Date</span></label>
+                <label class="field"><input name="location" type="text" placeholder=" " required><span>Location</span></label>
+                <label class="field"><input name="category" type="text" placeholder=" "><span>Category</span></label>
+                <label class="field full-span"><textarea name="description" rows="4" placeholder=" " required></textarea><span>Description</span></label>
+                <label class="field"><input name="registration_limit" type="number" min="0" step="1" placeholder=" " required><span>Maximum registrations</span></label>
+                <label class="access-row admin-access-row"><span>Enable event registration</span><input type="checkbox" name="registration_enabled" checked></label>
+                <label class="access-row admin-access-row"><span>Require participant email for contact</span><input type="checkbox" name="contact_email_required"></label>
+                <label class="field full-span"><textarea name="registration_fields" rows="8" placeholder=" "></textarea><span>Enter one field name per line. For dropdown options use: Question - Option 1. Option 2. Option 3. Leave this blank if only the participant email should be collected.</span></label>
+                <label class="field full-span"><input name="registration_link" type="url" placeholder=" "><span>Optional external link</span></label>
+                <button class="button button-primary glow-button full-span" type="submit" data-loading-text="Adding event...">Add Event</button>
+            </form>
+        </section>
+    </section>
+
+    <section class="admin-layout-grid admin-layout-grid-secondary" data-animate="fade-up">
+        <section class="glass-section glass-card admin-section-card">
+            <div class="section-head admin-section-head">
+                <div>
+                    <p class="eyebrow">User Roles</p>
+                    <h2 class="gradient-title">Coordinator access</h2>
+                </div>
+                <p class="section-copy">Promote participants when they need backend control, and demote when they no longer do.</p>
+            </div>
+            <div class="admin-stack-list">
+                {% for member in users %}
+                    <article class="glass-card admin-list-card admin-user-card">
+                        <div class="admin-list-copy">
+                            <h3>{{ member.name }}</h3>
+                            <p>{{ member.email }}</p>
+                            <div class="meta-list"><span>{{ member.role }}</span><span>{{ member.created_at }}</span></div>
+                        </div>
+                        <form method="post" class="admin-inline-form">
+                            <input type="hidden" name="user_id" value="{{ member.id }}">
+                            {% if member.role in ['admin', 'coordinator'] %}
+                                <input type="hidden" name="action" value="demote_user">
+                                <button class="button button-secondary" type="submit" {% if current_user and current_user.id == member.id %}disabled{% endif %}>Remove Coordinator</button>
+                            {% else %}
+                                <input type="hidden" name="action" value="promote_user">
+                                <button class="button button-primary" type="submit">Make Coordinator</button>
+                            {% endif %}
+                        </form>
+                    </article>
+                {% endfor %}
+            </div>
+        </section>
+    </section>
+
+    <section class="glass-section glass-card admin-section-card" data-animate="fade-up">
+        <div class="section-head admin-section-head">
+            <div>
+                <p class="eyebrow">Manage Events</p>
+                <h2 class="gradient-title">Current event list</h2>
+            </div>
+            <p class="section-copy">Each event card shows status, registration fill, and direct control actions.</p>
+        </div>
+        <div class="admin-event-grid">
+            {% for item in managed_events %}
+                <article class="glass-card admin-event-card">
+                    <div class="admin-card-top">
+                        <div>
+                            <h3>{{ item.title }}</h3>
+                            <p>{{ item.location }}</p>
+                        </div>
+                        <span class="chip">{{ item.registration_status_label }}</span>
+                    </div>
+                    <div class="meta-list admin-event-meta"><span>{{ item.event_date }}</span><span>{{ item.registration_count }} / {{ item.registration_limit if item.registration_limit else 'No limit' }}</span></div>
+                    <div class="admin-event-stats">
+                        <span>Registered: {{ item.registration_count }} / {{ item.registration_limit if item.registration_limit else 'No limit' }}</span>
+                        <span>Remaining: {{ item.remaining_slots if item.remaining_slots is not none else 'Unlimited' }}</span>
+                    </div>
+                    <div class="progress-bar"><span style="width: {{ item.registration_progress }}%;"></span></div>
+                    <div class="admin-card-actions">
+                        <a class="button button-primary full-width-button" href="{{ url_for('event_registration_list', event_id=item.id) }}">Generate List</a>
+                        <form method="post" class="admin-inline-form full-width-form">
+                            <input type="hidden" name="action" value="toggle_event_registration">
+                            <input type="hidden" name="event_id" value="{{ item.id }}">
+                            <button class="button button-secondary full-width-button" type="submit">{% if item.registration_enabled %}Close Registration{% else %}Open Registration{% endif %}</button>
+                        </form>
+                        <form method="post" class="admin-inline-form full-width-form">
+                            <input type="hidden" name="action" value="delete_event">
+                            <input type="hidden" name="event_id" value="{{ item.id }}">
+                            <button class="button button-secondary full-width-button" type="submit">Delete Event</button>
+                        </form>
+                    </div>
+                </article>
+            {% else %}
+                <article class="glass-card compact-card data-card empty-card"><h3>No events</h3><p>Add events to start the schedule.</p></article>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="admin-layout-grid admin-layout-grid-single" data-animate="fade-up">
+        <section class="glass-section glass-card admin-section-card">
+            <div class="section-head admin-section-head">
+                <div>
+                    <p class="eyebrow">Manage Resources</p>
+                    <h2 class="gradient-title">Current resource list</h2>
+                </div>
+                <p class="section-copy">Keep the list updated without making the page feel crowded.</p>
+            </div>
+            <div class="admin-stack-list">
+                {% for item in managed_resources %}
+                    <article class="glass-card admin-list-card">
+                        <div class="admin-list-copy">
+                            <h3>{{ item.title }}</h3>
+                            <p>{{ item.category }}</p>
+                            <div class="meta-list"><span>{{ item.difficulty }}</span></div>
+                        </div>
+                        <form method="post" class="admin-inline-form">
+                            <input type="hidden" name="action" value="delete_resource">
+                            <input type="hidden" name="resource_id" value="{{ item.id }}">
+                            <button class="button button-secondary" type="submit">Delete Resource</button>
+                        </form>
+                    </article>
+                {% else %}
+                    <article class="glass-card compact-card data-card empty-card"><h3>No resources</h3><p>Add resources to build the learning hub.</p></article>
+                {% endfor %}
+            </div>
+        </section>
+    </section>
+</main>
+{% endblock %}

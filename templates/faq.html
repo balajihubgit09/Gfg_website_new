@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}FAQ | GFG Club{% endblock %}
+
+{% block content %}
+<main class="page-shell">
+    <section class="page-hero glass-card" data-animate="fade-up">
+        <p class="eyebrow">FAQ</p>
+        <h1 class="gradient-title">Common questions about the club.</h1>
+        <p class="section-copy">These answers are now maintained directly in the page flow instead of a database table.</p>
+    </section>
+
+    <section class="leader-preview-list" data-animate="fade-up">
+        {% for item in faqs %}
+            <article class="glass-card compact-card data-card">
+                <span class="chip">Question</span>
+                <h3>{{ item.question }}</h3>
+                <p>{{ item.answer }}</p>
+            </article>
+        {% endfor %}
+    </section>
+</main>
+{% endblock %}

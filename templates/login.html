@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Login | GfG Challenge Portal{% endblock %}
+
+{% block content %}
+<main class="page-shell login-shell admin-login-shell">
+    <section class="admin-login-grid">
+        <section class="glass-card admin-login-brief" data-animate="fade-up">
+            <div class="admin-login-intro">
+                <span class="chip admin-security-chip">Restricted Console</span>
+                <p class="eyebrow">Identity And Access Management</p>
+                <h1 class="gradient-title">Secure coordinator sign-in for operational control.</h1>
+                <p class="section-copy">This portal is reserved for coordinators and admin operators managing registrations, events, resources, and role access. Every login should come from an assigned internal account.</p>
+            </div>
+
+            <div class="admin-login-signal-grid">
+                <article class="admin-signal-card">
+                    <span>Access Boundary</span>
+                    <strong>Separate admin route</strong>
+                    <p>Public visitors do not receive dashboard access from the regular site area.</p>
+                </article>
+                <article class="admin-signal-card">
+                    <span>Credential Policy</span>
+                    <strong>Hashed password validation</strong>
+                    <p>Passwords are verified securely before a dashboard session is issued.</p>
+                </article>
+                <article class="admin-signal-card">
+                    <span>Recovery Path</span>
+                    <strong>OTP password reset</strong>
+                    <p>Locked-out admins can recover access through the existing reset flow.</p>
+                </article>
+            </div>
+
+            <article class="admin-operations-card">
+                <div>
+                    <p class="eyebrow">Operations Checklist</p>
+                    <h2>Expected controls for admin access</h2>
+                </div>
+                <div class="admin-check-list">
+                    <span>Use a coordinator-issued email address</span>
+                    <span>Share credentials with no one</span>
+                    <span>Sign in only from trusted devices</span>
+                    <span>Reset immediately if access is suspected</span>
+                </div>
+            </article>
+        </section>
+
+        <section class="glass-card admin-login-panel" data-animate="fade-up">
+            <div class="admin-login-panel-head">
+                <p class="eyebrow">Coordinator Authentication</p>
+                <h2>Admin Login</h2>
+                <p class="section-copy">Enter the credentials assigned to your coordinator account to continue to the internal dashboard.</p>
+            </div>
+
+            <form class="form-grid modern-form admin-login-form" method="post">
+                <label class="field full-span">
+                    <input type="email" name="email" placeholder=" " autocomplete="email" value="{{ request.form.get('email', '') }}" required>
+                    <span>Work Email</span>
+                </label>
+                <label class="field full-span password-field">
+                    <input id="login-password" type="password" name="password" placeholder=" " autocomplete="current-password" required>
+                    <span>Password</span>
+                    <button class="password-toggle" type="button" data-password-toggle="login-password" aria-label="Show password">Show</button>
+                </label>
+                <button class="button button-primary glow-button full-span" type="submit" data-loading-text="Verifying access...">Access Admin Workspace</button>
+            </form>
+
+            <div class="admin-login-meta">
+                <div class="admin-login-meta-row">
+                    <span>Support path</span>
+                    <a class="text-link" href="{{ url_for('forgot_password') }}">Reset password with OTP</a>
+                </div>
+                {% if admin_bootstrap_needed %}
+                    <div class="admin-login-meta-row">
+                        <span>Bootstrap</span>
+                        <a class="text-link" href="{{ url_for('admin_setup') }}">Create the first coordinator account</a>
+                    </div>
+                {% endif %}
+            </div>
+
+            <article class="admin-login-note">
+                <span class="chip">Security Notice</span>
+                <p>Unauthorized use is prohibited. Access should be limited to approved club operators responsible for backend administration.</p>
+            </article>
+        </section>
+    </section>
+</main>
+{% endblock %}

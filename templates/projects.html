@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Projects | GfG Challenge Portal{% endblock %}
+
+{% block content %}
+<main class="page-shell">
+    <section class="page-hero glass-card" data-animate="fade-up">
+        <p class="eyebrow">Student Projects</p>
+        <h1 class="gradient-title">Prototype submissions from club teams.</h1>
+        <p class="section-copy">Every card represents a working idea shipped by a team inside the challenge workflow.</p>
+    </section>
+
+    <section class="card-grid columns-3" data-animate="fade-up">
+        {% for project in projects %}
+            <article class="glass-card compact-card data-card">
+                <span class="chip">{{ project.team_name }}</span>
+                <h3>{{ project.project_name }}</h3>
+                <p>{{ project.summary }}</p>
+                <div class="meta-list"><span>{{ project.created_at }}</span></div>
+                <div class="cta-row"><a class="text-link" href="{{ project.repo_url }}" target="_blank" rel="noreferrer">GitHub</a><a class="text-link" href="{{ project.demo_url }}" target="_blank" rel="noreferrer">Demo</a></div>
+            </article>
+        {% else %}
+            <article class="glass-card compact-card data-card empty-card"><h3>No projects yet</h3><p>Prototype submissions will appear here after teams start shipping.</p></article>
+        {% endfor %}
+    </section>
+</main>
+{% endblock %}

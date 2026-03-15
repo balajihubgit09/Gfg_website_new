@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Website Guide | GFG Club{% endblock %}
+
+{% block content %}
+<main class="page-shell">
+    <section class="page-hero glass-card" data-animate="fade-up">
+        <p class="eyebrow">Judge Access Guide</p>
+        <h1 class="gradient-title">Quickly explore all major features of the platform.</h1>
+        <p class="section-copy">This page is created only for judges to easily navigate and evaluate the platform. It will not be part of the final production deployment.</p>
+        <p class="section-copy">This is separate from the normal About page and is meant only as a guided access layer for evaluation.</p>
+        <div class="cta-row">
+            <a class="button button-primary" href="{{ url_for('home') }}">View Public Website</a>
+            <a class="button button-secondary" href="{{ url_for('admin_login') }}">View Admin Dashboard</a>
+            <a class="button button-secondary" href="{{ url_for('leaderboard') }}">View Leaderboard</a>
+            <a class="button button-secondary" href="{{ url_for('events') }}">Test User Flow</a>
+        </div>
+    </section>
+
+    <section class="card-grid columns-3" data-animate="fade-up">
+        <article class="glass-card compact-card data-card">
+            <span class="chip">Public User Demo</span>
+            <h3>Explore the user side</h3>
+            <p>Browse the landing page, open event pages, inspect resources, and verify the public access flow.</p>
+            <div class="cta-row">
+                <a class="button button-primary" href="{{ url_for('home') }}">Open Home</a>
+                <a class="button button-secondary" href="{{ url_for('events') }}">Open Events</a>
+            </div>
+        </article>
+        <article class="glass-card compact-card data-card">
+            <span class="chip">Admin Dashboard Demo</span>
+            <h3>Check the restricted workflow</h3>
+            <p>The admin entry is hidden in the real flow, but judges can open it directly here to review internal controls.</p>
+            <div class="cta-row">
+                <a class="button button-primary" href="{{ url_for('admin_login') }}">Open Admin Login</a>
+            </div>
+        </article>
+        <article class="glass-card compact-card data-card">
+            <span class="chip">Leaderboard Demo</span>
+            <h3>View rankings quickly</h3>
+            <p>Open the leaderboard page directly to inspect the presentation of ranking and competition data.</p>
+            <div class="cta-row">
+                <a class="button button-primary" href="{{ url_for('leaderboard') }}">Open Leaderboard</a>
+            </div>
+        </article>
+    </section>
+
+    <section class="card-grid columns-3" data-animate="fade-up">
+        <article class="glass-card compact-card data-card">
+            <span class="chip">Admin Demo Credentials</span>
+            <h3>Use these for judge verification</h3>
+            <div class="meta-list">
+                <span>Username: admin@123</span>
+                <span>Password: admin@2026</span>
+                <span>Name: Administrator</span>
+                <span>Role: admin</span>
+            </div>
+            <p>These credentials are provided only so judges can verify the restricted admin workflow quickly.</p>
+        </article>
+        <article class="glass-card compact-card data-card">
+            <span class="chip">Test Flow</span>
+            <h3>Simulate a user journey</h3>
+            <p>Start from Events, open a live event, and check how registration fields and participant contact options behave.</p>
+            <div class="cta-row">
+                <a class="button button-primary" href="{{ url_for('events') }}">Start Flow</a>
+            </div>
+        </article>
+        <article class="glass-card compact-card data-card">
+            <span class="chip">Resources Demo</span>
+            <h3>Inspect content pages</h3>
+            <p>Review the resource listing and detail pages to evaluate structure, clarity, and navigation.</p>
+            <div class="cta-row">
+                <a class="button button-primary" href="{{ url_for('resources') }}">Open Resources</a>
+            </div>
+        </article>
+    </section>
+
+    <section class="content-grid" data-animate="fade-up">
+        <article class="glass-card compact-card data-card">
+            <span class="chip">Where To Find Options</span>
+            <h2>Navigation map</h2>
+            <div class="meta-list">
+                <span>Top navigation: Home, Events, Resources, Leaderboard, FAQ, About</span>
+                <span>3-dot menu: quick links, contact support, theme options, judge guide</span>
+                <span>RIT logo double-click: hidden admin login entry</span>
+                <span>Admin dashboard: event control, participant list generation, resources, roles</span>
+            </div>
+        </article>
+
+        <article class="glass-card compact-card data-card">
+            <span class="chip">Current Rules</span>
+            <h2>Access model</h2>
+            <p>Public pages are open for easier evaluation. Only the admin dashboard and admin export/list routes are protected. The standalone team registration flow has been removed, and event-based registration is the active participation path.</p>
+        </article>
+    </section>
+
+    <section class="glass-card compact-card data-card" data-animate="fade-up">
+        <span class="chip">Support Pages</span>
+        <h3>Check information architecture</h3>
+        <p>FAQ, Contact, and About remain available as supporting pages in the main experience.</p>
+        <div class="cta-row">
+            <a class="button button-secondary" href="{{ url_for('faq') }}">FAQ</a>
+            <a class="button button-secondary" href="{{ url_for('contact') }}">Contact</a>
+            <a class="button button-secondary" href="{{ url_for('about') }}">About</a>
+        </div>
+    </section>
+
+    <section class="glass-section glass-card" data-animate="fade-up">
+        <div class="section-head">
+            <div>
+                <p class="eyebrow">Judge Checklist</p>
+                <h2 class="gradient-title">Recommended review order</h2>
+            </div>
+        </div>
+        <div class="card-grid columns-3">
+            <article class="glass-card compact-card data-card">
+                <span class="chip">1</span>
+                <p>Check the public landing page, featured metrics, and overall visual presentation.</p>
+            </article>
+            <article class="glass-card compact-card data-card">
+                <span class="chip">2</span>
+                <p>Open Events and inspect live registration behavior, including optional participant email collection where enabled.</p>
+            </article>
+            <article class="glass-card compact-card data-card">
+                <span class="chip">3</span>
+                <p>Review Resources, Leaderboard, FAQ, Contact, and About for information flow and usability.</p>
+            </article>
+            <article class="glass-card compact-card data-card">
+                <span class="chip">4</span>
+                <p>Open the admin login using the direct shortcut above or by double-clicking the RIT logo.</p>
+            </article>
+            <article class="glass-card compact-card data-card">
+                <span class="chip">5</span>
+                <p>Inside admin, verify event creation, registration settings, participant list generation, and resource management.</p>
+            </article>
+            <article class="glass-card compact-card data-card">
+                <span class="chip">6</span>
+                <p>Use generated participant lists, CSV export, and PDF export to evaluate backend utility for organizers.</p>
+            </article>
+        </div>
+    </section>
+</main>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}GFG Club | Home{% endblock %}
+
+{% block content %}
+<main class="page-shell home-landing-page">
+    <section class="home-landing glass-card" data-animate="fade-up">
+        <div class="home-landing-copy">
+            <p class="eyebrow">Welcome to</p>
+            <h1 class="gradient-title">GFG Club</h1>
+            <p class="section-copy home-intro-copy">We are here to innovate, learn together, and build a strong coding community through teamwork, events, and practical problem solving.</p>
+            <p class="partner-line">Official Partners with <strong>Geeks For Geeks</strong></p>
+            <div class="cta-row home-landing-actions">
+                <a class="button button-primary" href="{{ url_for('events') }}">See Upcoming Events</a>
+                <a class="button button-secondary" href="{{ url_for('resources') }}">Explore Resources</a>
+            </div>
+        </div>
+        <div class="home-stats-grid">
+            <article class="glass-card stat-highlight-card">
+                <span>Teams Registered</span>
+                <strong class="metric-value" data-count="{{ metrics.team_count }}">{{ metrics.team_count }}</strong>
+                <p>This value comes directly from the registered teams table.</p>
+            </article>
+            <article class="glass-card stat-highlight-card">
+                <span>Upcoming Events</span>
+                <strong class="metric-value" data-count="{{ metrics.upcoming_event_count }}">{{ metrics.upcoming_event_count }}</strong>
+                <p>Live count of events scheduled from today onward.</p>
+            </article>
+            <article class="glass-card stat-highlight-card">
+                <span>Events Hosted</span>
+                <strong class="metric-value" data-count="{{ metrics.hosted_event_count }}">{{ metrics.hosted_event_count }}</strong>
+                <p>Completed or past events recorded by the backend.</p>
+            </article>
+        </div>
+    </section>
+
+    <section class="glass-card events-status-panel" data-animate="fade-up">
+        <div class="section-head">
+            <div>
+                <p class="eyebrow">Upcoming Event Status</p>
+                <h2 class="gradient-title">Track registration progress before the event starts.</h2>
+            </div>
+        </div>
+        <div class="card-grid admin-card-grid">
+            {% for event in upcoming_events %}
+                <article class="glass-card compact-card data-card">
+                    <span class="chip">{{ event.registration_status_label }}</span>
+                    <h3>{{ event.title }}</h3>
+                    <p>{{ event.description }}</p>
+                    <div class="meta-list"><span>{{ event.event_date }}</span><span>{{ event.registration_count }} / {{ event.registration_limit if event.registration_limit else 'No limit' }}</span></div>
+                    <div class="progress-bar"><span style="width: {{ event.registration_progress }}%;"></span></div>
+                    <a class="button button-secondary" href="{{ url_for('event_detail', event_id=event.id) }}">Open Event</a>
+                </article>
+            {% else %}
+                <article class="glass-card compact-card data-card empty-card"><h3>No upcoming events</h3><p>Add an event from the admin dashboard to show registration status here.</p></article>
+            {% endfor %}
+        </div>
+    </section>
+</main>
+{% endblock %}

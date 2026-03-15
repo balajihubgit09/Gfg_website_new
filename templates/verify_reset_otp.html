@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Verify OTP | GFG Club{% endblock %}
+
+{% block content %}
+<main class="page-shell login-shell signup-shell">
+    <section class="login-grid signup-grid">
+        <section class="glass-card login-panel signup-panel" data-animate="fade-up">
+            <p class="eyebrow">OTP Verification</p>
+            <h1 class="gradient-title">Verify the code sent to your phone.</h1>
+            <p class="section-copy">Enter the OTP sent to <strong>{{ reset_phone_number }}</strong>. The code expires after 10 minutes.</p>
+
+            <form class="form-grid modern-form" method="post">
+                <label class="field full-span">
+                    <input type="text" name="otp" placeholder=" " inputmode="numeric" maxlength="6" value="{{ request.form.get('otp', '') }}" required>
+                    <span>OTP</span>
+                </label>
+                <button class="button button-primary glow-button" type="submit" data-loading-text="Verifying OTP...">Verify OTP</button>
+            </form>
+        </section>
+
+        <aside class="login-side-stack">
+            <article class="glass-card credential-card signup-side-card" data-animate="fade-up">
+                <span class="chip">Next Step</span>
+                <p>Once the OTP is verified, you will be redirected to the password reset page.</p>
+            </article>
+        </aside>
+    </section>
+</main>
+{% endblock %}
