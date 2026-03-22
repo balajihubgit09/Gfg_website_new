@@ -1085,21 +1085,17 @@ def create_app() -> Flask:
             ).fetchone()
 
             if user is None or not check_password_hash(user["password_hash"], password):
-                print(f"Login failed email={email!r} user_found={user is not None}")
                 flash("Incorrect email or password.", "error")
             elif not bool(user["is_active"]):
-                print(f"Login blocked inactive email={email!r}")
                 flash("This account is not active yet.", "error")
             else:
                 if admin_only and not is_admin(user):
-                    print(f"Admin login rejected email={email!r} role={user['role']!r}")
                     flash("This login page is reserved for core members and admins.", "error")
                     return redirect(url_for("login"))
                 if not admin_only and is_admin(user):
                     return render_template("admin_access_notice.html")
                 session.clear()
                 session["user_id"] = user["id"]
-                print(f"Login succeeded email={email!r} role={user['role']!r}")
                 flash(f"Welcome back, {user['name']}.", "success")
                 if is_admin(user):
                     return redirect(url_for("admin"))
@@ -2769,7 +2765,6 @@ def ensure_default_admin_users() -> None:
                 """,
                 values,
             )
-            print(f"Seeded SQLite admin {admin['email']}")
         else:
             db.execute(
                 """
@@ -2796,7 +2791,6 @@ def ensure_default_admin_users() -> None:
                     existing_user["id"],
                 ),
             )
-            print(f"Updated SQLite admin {admin['email']}")
     db.commit()
 
 
