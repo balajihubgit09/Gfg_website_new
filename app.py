@@ -1721,8 +1721,6 @@ def create_app() -> Flask:
 
                     if registration_limit < 0:
                         flash("Registration limit must be a valid integer.", "error")
-                    elif not field_definitions and not contact_email_required:
-                        flash("Add at least one registration field or enable participant email collection.", "error")
                     else:
                         cursor = db.execute(
                             """
