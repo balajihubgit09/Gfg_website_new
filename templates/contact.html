@@ -3,22 +3,25 @@
 {% block title %}Contact | GFG Club{% endblock %}
 
 {% block content %}
-<main class="page-shell form-page">
-    <section class="form-layout">
-        <aside class="form-side-panel glass-card" data-animate="fade-up">
-            <span class="eyebrow">Contact & Support</span>
-            <h1 class="gradient-title">Reach the club through direct contact links.</h1>
-            <p class="section-copy">The contact page no longer stores queries in the database. Use the official links below to contact the team directly.</p>
-        </aside>
+<main class="page-shell clean-page-shell">
+    <section class="page-hero glass-card clean-hero-card" data-animate="fade-up">
+        <p class="eyebrow">Contact</p>
+        <h1 class="gradient-title">Reach the club through official channels.</h1>
+        <p class="section-copy">Use direct links instead of a stored contact form.</p>
+    </section>
 
-        <section class="form-panel glass-card" data-animate="fade-up">
-            <div class="section-head"><div><p class="eyebrow">Official Channels</p><h2 class="gradient-title">Direct contact options</h2></div></div>
-            <div class="access-stack form-side-stack">
-                <div class="access-row"><span class="chip">Email</span><a class="text-link" href="{{ contact_links.mailto }}">{{ contact_links.email }}</a></div>
-                <div class="access-row"><span class="chip">WhatsApp</span><a class="text-link" href="{{ contact_links.whatsapp }}" target="_blank" rel="noreferrer">Join community group</a></div>
-                <div class="access-row"><span class="chip">Community</span><a class="text-link" href="{{ contact_links.community }}" target="_blank" rel="noreferrer">Open GeeksforGeeks</a></div>
+    <section class="glass-card clean-section-card" data-animate="fade-up">
+        <div class="section-head clean-section-head">
+            <div>
+                <p class="eyebrow">Channels</p>
+                <h2 class="gradient-title">Direct contact options</h2>
             </div>
-        </section>
+        </div>
+        <div class="access-stack form-side-stack clean-card-grid">
+            <div class="access-row"><span class="chip">Email</span><a class="text-link" href="{{ contact_links.mailto }}">{{ contact_links.email }}</a></div>
+            <div class="access-row"><span class="chip">WhatsApp</span><a class="text-link" href="{{ contact_links.whatsapp }}" target="_blank" rel="noreferrer">Join community group</a></div>
+            <div class="access-row"><span class="chip">Community</span><a class="text-link" href="{{ contact_links.community }}" target="_blank" rel="noreferrer">Open GeeksforGeeks</a></div>
+        </div>
     </section>
 </main>
 {% endblock %}

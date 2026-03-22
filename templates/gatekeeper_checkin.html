@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+
+{% block title %}Gatekeeper Check-in | {{ event.title }}{% endblock %}
+
+{% block content %}
+<main class="page-shell">
+    <section class="page-hero glass-card" data-animate="fade-up">
+        <p class="eyebrow">Gatekeeper Console</p>
+        <h1 class="gradient-title">{{ event.title }}</h1>
+        <p class="section-copy">Scan an official RIT ID QR or verify an approved external-college register number. Entry is only finalized after the gatekeeper confirms the matched identity.</p>
+    </section>
+
+    <section class="glass-card form-panel gatekeeper-shell" data-animate="fade-up">
+        <div class="scanner-panel-grid">
+            <div class="scanner-panel-copy">
+                <div class="cta-row">
+                    <button class="button button-primary" type="button" id="gatekeeper-start">Start Scanner</button>
+                    <button class="button button-secondary" type="button" id="gatekeeper-stop" disabled>Stop Scanner</button>
+                </div>
+                <label class="field full-span">
+                    <input id="gatekeeper-link" type="url" placeholder=" ">
+                    <span>Paste the official RIT verification link</span>
+                </label>
+                <label class="field full-span">
+                    <input id="gatekeeper-register-number" type="text" placeholder=" ">
+                    <span>Or enter the external student register number</span>
+                </label>
+                <button class="button button-secondary" type="button" id="gatekeeper-check">Verify Identity</button>
+                <button class="button button-primary" type="button" id="gatekeeper-confirm" disabled>Confirm Identity and Allow Entry</button>
+                <div class="field full-span file-field-shell">
+                    <span class="file-field-label">Or upload/capture a QR image</span>
+                    <label class="file-picker" for="gatekeeper-image">
+                        <span class="file-picker-button">Choose QR Image</span>
+                        <span class="file-picker-name" id="gatekeeper-image-name">No file chosen</span>
+                    </label>
+                    <input id="gatekeeper-image" class="file-input-hidden" type="file" accept="image/*" capture="environment">
+                </div>
+                <button class="button button-secondary" type="button" id="gatekeeper-decode-image">Read QR from image</button>
+                <p class="scanner-status" id="gatekeeper-status">Awaiting scan.</p>
+            </div>
+            <div class="scanner-view-shell">
+                <div id="gatekeeper-reader" class="qr-reader" hidden></div>
+            </div>
+        </div>
+
+        <section id="gatekeeper-result" class="glass-card gatekeeper-result gatekeeper-result-neutral">
+            <h2>Awaiting verification</h2>
+            <p>Authorized students will get a green pass screen here.</p>
+        </section>
+    </section>
+</main>
+<script src="{{ url_for('static', filename='js/qr-scanner.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const startButton = document.getElementById('gatekeeper-start');
+    const stopButton = document.getElementById('gatekeeper-stop');
+    const checkButton = document.getElementById('gatekeeper-check');
+    const confirmButton = document.getElementById('gatekeeper-confirm');
+    const decodeImageButton = document.getElementById('gatekeeper-decode-image');
+    const imageInput = document.getElementById('gatekeeper-image');
+    const imageName = document.getElementById('gatekeeper-image-name');
+    const statusNode = document.getElementById('gatekeeper-status');
+    const readerNode = document.getElementById('gatekeeper-reader');
+    const linkInput = document.getElementById('gatekeeper-link');
+    const registerNumberInput = document.getElementById('gatekeeper-register-number');
+    const resultNode = document.getElementById('gatekeeper-result');
+    let qrScanner = null;
+    let pendingConfirmation = null;
+
+    const setStatus = (message) => {
+        statusNode.textContent = message;
+    };
+
+    const resetScannerUi = () => {
+        readerNode.hidden = true;
+        startButton.disabled = false;
+        stopButton.disabled = true;
+    };
+
+    const resetPendingConfirmation = () => {
+        pendingConfirmation = null;
+        if (confirmButton) confirmButton.disabled = true;
+    };
+
+    const renderResult = (payload) => {
+        const stateClass = payload.pending_confirmation
+            ? 'gatekeeper-result-neutral'
+            : payload.allowed
+                ? 'gatekeeper-result-green'
+                : 'gatekeeper-result-red';
+        const title = payload.pending_confirmation
+            ? 'Confirm Identity'
+            : payload.allowed
+                ? 'Access Granted'
+                : 'Access Denied';
+        resultNode.className = `glass-card gatekeeper-result ${stateClass}`;
+        resultNode.innerHTML = `
+            <h2>${title}</h2>
+            <p>${payload.message}</p>
+            <div class="meta-list">
+                <span>${payload.student_name || 'Unknown student'}</span>
+                <span>${payload.register_number || 'No register number'}</span>
+                ${payload.course ? `<span>${payload.course}</span>` : ''}
+                ${payload.department_name ? `<span>${payload.department_name}</span>` : ''}
+                ${payload.checked_in_at ? `<span>${payload.checked_in_at}</span>` : ''}
+            </div>
+        `;
+    };
+
+    const verifyIdentity = async ({ verificationUrl = '', registerNumber = '', studentName = '', confirmEntry = false } = {}) => {
+        if (!verificationUrl && !registerNumber) {
+            setStatus('Paste or scan a verification link, or enter the external register number first.');
+            resetPendingConfirmation();
+            return;
+        }
+
+        try {
+            setStatus(confirmEntry ? 'Finalizing entry...' : 'Checking identity...');
+            const response = await fetch('{{ url_for("api_gatekeeper_check", event_id=event.id) }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    verification_url: verificationUrl,
+                    register_number: registerNumber,
+                    student_name: studentName,
+                    confirm_entry: confirmEntry,
+                }),
+            });
+            const payload = await response.json();
+            if (!response.ok || !payload.ok) {
+                resetPendingConfirmation();
+                renderResult({ allowed: false, message: payload.message || payload.error || 'Verification failed.' });
+                setStatus(payload.error || payload.message || 'Verification failed.');
+                return;
+            }
+            renderResult(payload);
+            if (payload.pending_confirmation) {
+                pendingConfirmation = {
+                    verificationUrl,
+                    registerNumber: payload.register_number || registerNumber,
+                    studentName: payload.student_name || studentName,
+                };
+                if (confirmButton) confirmButton.disabled = false;
+            } else {
+                resetPendingConfirmation();
+            }
+            setStatus(payload.message);
+        } catch (error) {
+            resetPendingConfirmation();
+            renderResult({ allowed: false, message: 'Network error verifying entry.' });
+            setStatus('Network error verifying entry.');
+        }
+    };
+
+    const decodeQrImage = async (file) => {
+        if (!file) {
+            setStatus('Choose a QR image first.');
+            return;
+        }
+
+        try {
+            setStatus('Reading QR image...');
+            const formData = new FormData();
+            formData.append('qr_image', file);
+            const response = await fetch('{{ url_for("api_decode_qr_image") }}', {
+                method: 'POST',
+                body: formData,
+            });
+            const payload = await response.json();
+            if (!response.ok || !payload.ok) {
+                setStatus(payload.error || 'Could not decode the QR image.');
+                return;
+            }
+            linkInput.value = payload.decoded_text;
+            await verifyIdentity({ verificationUrl: payload.decoded_text });
+        } catch (error) {
+            setStatus('Network error decoding image.');
+        }
+    };
+
+    checkButton?.addEventListener('click', async () => {
+        await verifyIdentity({
+            verificationUrl: linkInput.value.trim(),
+            registerNumber: registerNumberInput?.value.trim() || '',
+        });
+    });
+
+    confirmButton?.addEventListener('click', async () => {
+        if (!pendingConfirmation) {
+            setStatus('Verify the student identity first.');
+            return;
+        }
+        await verifyIdentity({
+            verificationUrl: pendingConfirmation.verificationUrl,
+            registerNumber: pendingConfirmation.registerNumber,
+            studentName: pendingConfirmation.studentName,
+            confirmEntry: true,
+        });
+    });
+
+    decodeImageButton?.addEventListener('click', async () => {
+        await decodeQrImage(imageInput?.files?.[0] || null);
+    });
+
+    imageInput?.addEventListener('change', () => {
+        const file = imageInput.files?.[0];
+        imageName.textContent = file ? file.name : 'No file chosen';
+    });
+
+    startButton?.addEventListener('click', async () => {
+        readerNode.hidden = false;
+        startButton.disabled = true;
+        stopButton.disabled = false;
+        setStatus('Starting camera...');
+
+        try {
+            qrScanner = qrScanner || await window.createQrScanner({
+                container: readerNode,
+                onStatus: setStatus,
+                onDetect: async (decodedText) => {
+                    linkInput.value = decodedText;
+                    await verifyIdentity({ verificationUrl: decodedText });
+                    resetScannerUi();
+                },
+            });
+            await qrScanner.start();
+        } catch (error) {
+            setStatus(error.message || `Unable to start the camera: ${error}`);
+            resetScannerUi();
+        }
+    });
+
+    stopButton?.addEventListener('click', async () => {
+        if (!qrScanner) {
+            return;
+        }
+        await qrScanner.stop();
+        resetScannerUi();
+        setStatus('Scanner stopped.');
+    });
+});
+</script>
+{% endblock %}
+
+

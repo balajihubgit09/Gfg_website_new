@@ -30,15 +30,15 @@
                     <span>Team name</span>
                 </label>
                 <label class="field">
-                    <input name="lead_name" type="text" placeholder=" " autocomplete="name" value="{{ request.form.get('lead_name', '') }}" required>
+                    <input name="lead_name" type="text" placeholder=" " autocomplete="name" value="{{ request.form.get('lead_name', team_form_defaults.lead_name) }}" required>
                     <span>Team lead</span>
                 </label>
                 <label class="field">
-                    <input name="email" type="email" placeholder=" " autocomplete="email" value="{{ request.form.get('email', '') }}" required>
+                    <input name="email" type="email" placeholder=" " autocomplete="email" value="{{ request.form.get('email', team_form_defaults.email) }}" required>
                     <span>Contact email</span>
                 </label>
                 <label class="field">
-                    <input name="members" type="text" placeholder=" " value="{{ request.form.get('members', '') }}" required>
+                    <input name="members" type="text" placeholder=" " value="{{ request.form.get('members', team_form_defaults.members) }}" required>
                     <span>Team members</span>
                 </label>
                 <p class="field-hint full-span">Example: Alice, Bob, Charan, Deepa</p>

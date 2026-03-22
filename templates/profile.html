@@ -3,60 +3,34 @@
 {% block title %}Profile | GfG Challenge Portal{% endblock %}
 
 {% block content %}
-<main class="page-shell dashboard-shell">
-    <section class="page-hero glass-card profile-hero" data-animate="fade-up">
-        <p class="eyebrow">Account Workspace</p>
+<main class="page-shell dashboard-shell clean-page-shell">
+    <section class="page-hero glass-card profile-hero clean-hero-card" data-animate="fade-up">
+        <p class="eyebrow">Profile</p>
         <h1 class="gradient-title">{{ user.name }}</h1>
-        <p class="section-copy">Signed in as {{ user.email }} with {{ user.role }} access. Visitors can browse public pages, participants can use member features, and admins control the dashboard.</p>
+        <p class="section-copy">{{ user.email }} | {{ user.role }}</p>
     </section>
 
-    <section class="metrics-grid" data-animate="fade-up">
-        <article class="metric-card glass-card">
-            <span>Registered Teams</span>
-            <strong class="metric-value" data-count="{{ account_stats.teams }}">{{ account_stats.teams }}</strong>
-        </article>
-        <article class="metric-card glass-card">
-            <span>Resources</span>
-            <strong class="metric-value" data-count="{{ account_stats.resources }}">{{ account_stats.resources }}</strong>
-        </article>
-        <article class="metric-card glass-card">
-            <span>Open Events</span>
-            <strong class="metric-value" data-count="{{ account_stats.open_events }}">{{ account_stats.open_events }}</strong>
-        </article>
-        <article class="metric-card glass-card">
-            <span>Role</span>
-            <strong>{{ user.role }}</strong>
-        </article>
+    <section class="metrics-grid clean-metrics-grid" data-animate="fade-up">
+        <article class="metric-card glass-card clean-stat-card"><span>Teams</span><strong class="metric-value" data-count="{{ account_stats.teams }}">{{ account_stats.teams }}</strong></article>
+        <article class="metric-card glass-card clean-stat-card"><span>Resources</span><strong class="metric-value" data-count="{{ account_stats.resources }}">{{ account_stats.resources }}</strong></article>
+        <article class="metric-card glass-card clean-stat-card"><span>Open Events</span><strong class="metric-value" data-count="{{ account_stats.open_events }}">{{ account_stats.open_events }}</strong></article>
+        <article class="metric-card glass-card clean-stat-card"><span>Role</span><strong>{{ user.role }}</strong></article>
     </section>
 
-    <section class="signal-grid" data-animate="fade-up">
-        <article class="glass-card signal-panel">
-            <div class="section-head">
-                <div>
-                    <p class="eyebrow">Account Actions</p>
-                    <h2 class="gradient-title">Use your access intelligently.</h2>
-                </div>
+    <section class="glass-card signal-panel clean-section-card" data-animate="fade-up">
+        <div class="section-head clean-section-head">
+            <div>
+                <p class="eyebrow">Quick Actions</p>
+                <h2 class="gradient-title">Open the next thing quickly.</h2>
             </div>
-            <div class="settings-group">
-                <a class="settings-link" href="{{ url_for('brief') }}">Open challenge brief</a>
-                {% if quick_next_event %}
-                    <a class="settings-link" href="{{ url_for('event_detail', event_id=quick_next_event.id) }}">Review next checkpoint</a>
-                {% endif %}
-                <a class="settings-link settings-link-danger" href="{{ url_for('logout') }}">Logout</a>
-            </div>
-        </article>
-
-        <article class="glass-card signal-panel">
-            <div class="section-head">
-                <div>
-                    <p class="eyebrow">Why This Exists</p>
-                    <h2 class="gradient-title">Not a fake login button.</h2>
-                </div>
-            </div>
-            <p class="section-copy">
-                This flow persists your session, protects coordinator-only screens, and gives the settings gear a real account context.
-            </p>
-        </article>
+        </div>
+        <div class="settings-group">
+            <a class="settings-link" href="{{ url_for('brief') }}">Open challenge brief</a>
+            {% if quick_next_event %}
+                <a class="settings-link" href="{{ url_for('event_detail', event_id=quick_next_event.id) }}">Open next event</a>
+            {% endif %}
+            <a class="settings-link settings-link-danger" href="{{ url_for('logout') }}">Logout</a>
+        </div>
     </section>
 </main>
 {% endblock %}

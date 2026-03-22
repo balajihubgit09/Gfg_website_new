@@ -9,6 +9,7 @@ const navLinks = document.querySelectorAll('.nav a');
 const glassCards = document.querySelectorAll('.glass-card');
 const animatedCounters = document.querySelectorAll('.metric-value');
 const countdownPills = document.querySelectorAll('[data-countdown]');
+const eventCloseCountdowns = document.querySelectorAll('[data-event-close-countdown]');
 const passwordToggles = document.querySelectorAll('[data-password-toggle]');
 const forms = document.querySelectorAll('.modern-form');
 const flashMessages = document.querySelectorAll('.flash');
@@ -190,6 +191,39 @@ countdownPills.forEach((pill) => {
         pill.textContent = `Next event: ${rawDate}`;
     }
 });
+
+const syncEventCloseCountdowns = () => {
+    eventCloseCountdowns.forEach((badge) => {
+        const rawTarget = badge.dataset.eventCloseCountdown;
+        const target = new Date(rawTarget);
+
+        if (Number.isNaN(target.getTime())) {
+            badge.classList.remove('is-visible', 'is-urgent');
+            return;
+        }
+
+        const diffMs = target.getTime() - Date.now();
+        if (diffMs <= 0 || diffMs > 60 * 60 * 1000) {
+            badge.classList.remove('is-visible', 'is-urgent');
+            badge.textContent = '';
+            return;
+        }
+
+        const totalSeconds = Math.floor(diffMs / 1000);
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+
+        badge.textContent = `Closes in ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        badge.classList.add('is-visible');
+        badge.classList.toggle('is-urgent', diffMs <= 15 * 60 * 1000);
+    });
+};
+
+if (eventCloseCountdowns.length > 0) {
+    syncEventCloseCountdowns();
+    window.setInterval(syncEventCloseCountdowns, 1000);
+}
 
 flashMessages.forEach((message) => {
     window.setTimeout(() => {

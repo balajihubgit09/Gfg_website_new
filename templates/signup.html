@@ -8,25 +8,74 @@
         <section class="glass-card login-panel signup-panel" data-animate="fade-up">
             <p class="eyebrow">Welcome Sequence</p>
             <h1 class="gradient-title">Create your club account and enter the portal.</h1>
-            <p class="section-copy">Use your real name, email, and phone number so your registrations and password recovery stay linked to the right account.</p>
+            <p class="section-copy">Verify your student identity to seamlessly bind your RIT details with your club profile and password.</p>
 
             <form class="form-grid modern-form" method="post">
+                <input id="verification-url" type="hidden" name="verification_url" value="{{ request.form.get('verification_url', '') }}">
+
+                <section class="glass-card scanner-panel full-span signup-scanner">
+                    <div class="section-head">
+                        <div>
+                            <p class="eyebrow">Permission First Identity</p>
+                            <h3>Scan the official RIT ID QR to auto-fill identity.</h3>
+                        </div>
+                    </div>
+                    <div class="scanner-panel-copy">
+                        <div class="cta-row">
+                            <button class="button button-primary" type="button" id="start-qr-scan">Scan ID to Auto-fill</button>
+                            <button class="button button-secondary" type="button" id="stop-qr-scan" disabled>Stop Scanner</button>
+                        </div>
+                        <label class="field full-span">
+                            <input id="verification-url-input" type="url" placeholder=" " value="{{ request.form.get('verification_url', '') }}">
+                            <span>Or paste the official RIT verification link</span>
+                        </label>
+                        <button class="button button-secondary" type="button" id="fetch-identity">Fetch from link</button>
+                        <div class="field full-span file-field-shell">
+                            <span class="file-field-label">Or upload a QR image</span>
+                            <label class="file-picker" for="qr-image-input">
+                                <span class="file-picker-button">Choose QR Image</span>
+                                <span class="file-picker-name" id="qr-image-name">No file chosen</span>
+                            </label>
+                            <input id="qr-image-input" class="file-input-hidden" type="file" accept="image/*" capture="environment">
+                        </div>
+                        <button class="button button-secondary" type="button" id="decode-qr-image">Read QR from image</button>
+                        <p class="scanner-status" id="scanner-status">Identity not loaded yet.</p>
+                    </div>
+                    <div class="scanner-view-shell">
+                        <div id="qr-reader" class="qr-reader" hidden></div>
+                    </div>
+                </section>
+
                 <label class="field full-span">
-                    <input type="text" name="name" placeholder=" " autocomplete="name" value="{{ request.form.get('name', '') }}" required>
+                    <input id="student-name" type="text" name="name" placeholder=" " autocomplete="name" value="{{ request.form.get('name', '') }}" readonly required>
                     <span>Full Name</span>
                 </label>
+                <label class="field">
+                    <input id="register-number" name="register_number" type="text" placeholder=" " value="{{ request.form.get('register_number', '') }}" readonly required>
+                    <span>Register Number</span>
+                </label>
+                <label class="field">
+                    <input id="department" name="department_name" type="text" placeholder=" " value="{{ request.form.get('department_name', '') }}" readonly required>
+                    <span>Department</span>
+                </label>
+                <input id="course" type="hidden" name="course" value="{{ request.form.get('course', '') }}">
+                <input id="department-code" type="hidden" name="department_code" value="{{ request.form.get('department_code', '') }}">
+                <input id="department-slug" type="hidden" name="department_slug" value="{{ request.form.get('department_slug', '') }}">
+                <input id="hod-email" type="hidden" name="hod_email" value="{{ request.form.get('hod_email', '') }}">
+
                 <label class="field full-span">
-                    <input type="email" name="email" placeholder=" " autocomplete="email" value="{{ request.form.get('email', '') }}" required>
-                    <span>Email</span>
+                    <input id="contact-email" type="email" name="email" placeholder=" " autocomplete="email" value="{{ request.form.get('email', '') }}" readonly required>
+                    <span>Institutional Email</span>
                 </label>
                 <label class="field full-span">
                     <input type="tel" name="phone_number" placeholder=" " autocomplete="tel" value="{{ request.form.get('phone_number', '') }}" required>
                     <span>Phone Number</span>
                 </label>
-                <p class="field-hint full-span">Store the number in international format when possible, for example `+919876543210`.</p>
+                <p class="field-hint full-span">Store the number in international format, for example `+919876543210`.</p>
+                
                 <label class="field full-span password-field">
                     <input id="signup-password" type="password" name="password" placeholder=" " autocomplete="new-password" minlength="8" required>
-                    <span>Password</span>
+                    <span>Account Password</span>
                     <button class="password-toggle" type="button" data-password-toggle="signup-password" aria-label="Show password">Show</button>
                 </label>
                 <p class="field-hint full-span">Use at least 8 characters so the account is harder to guess.</p>
@@ -38,18 +87,181 @@
             <article class="glass-card credential-card signup-side-card" data-animate="fade-up">
                 <span class="chip">First Stop</span>
                 <h2>New visitors start here.</h2>
-                <p>Create your account once, and the portal will keep your workspace available for events, resources, and future visits.</p>
+                <p>Verify your official student ID once, and the portal will keep your workspace seamlessly available for events and resources.</p>
             </article>
             <article class="glass-card credential-card signup-side-card" data-animate="fade-up">
                 <span class="chip">What you unlock</span>
-                <p>Account access, form shortcuts, a personal workspace, and password reset through OTP on your registered phone number.</p>
+                <p>Account access, 1-click event registration shortcuts, a personal workspace, and password reset through OTP on your phone.</p>
                 <div class="meta-list">
-                    <span>Session based</span>
+                    <span>1-Click Forms</span>
                     <span>Hashed passwords</span>
-                    <span>Phone OTP recovery</span>
+                    <span>Verified Profiles</span>
                 </div>
             </article>
         </aside>
     </section>
 </main>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/qr-scanner.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const startButton = document.getElementById('start-qr-scan');
+    const stopButton = document.getElementById('stop-qr-scan');
+    const fetchButton = document.getElementById('fetch-identity');
+    const qrReaderElement = document.getElementById('qr-reader');
+    const verificationUrlInput = document.getElementById('verification-url-input');
+    const verificationUrlHidden = document.getElementById('verification-url');
+    const qrImageInput = document.getElementById('qr-image-input');
+    const qrImageName = document.getElementById('qr-image-name');
+    const decodeImageButton = document.getElementById('decode-qr-image');
+    const scannerStatus = document.getElementById('scanner-status');
+
+    const identityFields = {
+        student_name: document.getElementById('student-name'),
+        register_number: document.getElementById('register-number'),
+        course: document.getElementById('course'),
+        department_name: document.getElementById('department'),
+        department_code: document.getElementById('department-code'),
+        department_slug: document.getElementById('department-slug'),
+        hod_email: document.getElementById('hod-email'),
+        contact_email: document.getElementById('contact-email'),
+    };
+    let qrScanner = null;
+
+    const setStatus = (message) => {
+        if (scannerStatus) scannerStatus.textContent = message;
+    };
+
+    const resetScannerUi = () => {
+        if (qrReaderElement) qrReaderElement.hidden = true;
+        if (startButton) startButton.disabled = false;
+        if (stopButton) stopButton.disabled = true;
+    };
+
+    const applyIdentity = (identity) => {
+        if (verificationUrlInput) verificationUrlInput.value = identity.verification_url || '';
+        if (verificationUrlHidden) verificationUrlHidden.value = identity.verification_url || '';
+        if (identityFields.student_name) identityFields.student_name.value = identity.student_name || '';
+        if (identityFields.register_number) identityFields.register_number.value = identity.register_number || '';
+        if (identityFields.course) identityFields.course.value = identity.course || '';
+        if (identityFields.department_name) identityFields.department_name.value = identity.department_name || '';
+        if (identityFields.department_code) identityFields.department_code.value = identity.department_code || '';
+        if (identityFields.department_slug) identityFields.department_slug.value = identity.department_slug || '';
+        if (identityFields.hod_email) identityFields.hod_email.value = identity.hod_email || '';
+        if (identityFields.contact_email && identity.participant_email) {
+            identityFields.contact_email.value = identity.participant_email;
+        }
+        setStatus(`Identity securely loaded for ${identity.student_name}.`);
+    };
+
+    const fetchIdentity = async (verificationUrl) => {
+        if (!verificationUrl) {
+            setStatus('Paste or scan a valid RIT verification link first.');
+            return;
+        }
+        try {
+            setStatus('Verifying RIT identity...');
+            const response = await fetch('{{ url_for("api_rit_identity") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ verification_url: verificationUrl }),
+            });
+            const payload = await response.json();
+            if (!response.ok || !payload.ok) {
+                setStatus(payload.error || 'Identity verification failed.');
+                return;
+            }
+            applyIdentity(payload.identity);
+        } catch (error) {
+            setStatus('Network error fetching identity.');
+        }
+    };
+
+    const decodeQrImage = async (file) => {
+        if (!file) {
+            setStatus('Choose a QR image first.');
+            return;
+        }
+        try {
+            setStatus('Reading QR image...');
+            const formData = new FormData();
+            formData.append('qr_image', file);
+            const response = await fetch('{{ url_for("api_decode_qr_image") }}', {
+                method: 'POST',
+                body: formData,
+            });
+            const payload = await response.json();
+            if (!response.ok || !payload.ok) {
+                setStatus(payload.error || 'Could not decode the QR image.');
+                return;
+            }
+            if (verificationUrlInput) verificationUrlInput.value = payload.decoded_text;
+            await fetchIdentity(payload.decoded_text);
+        } catch (error) {
+            setStatus('Network error decoding image.');
+        }
+    };
+
+    const stopScanner = async ({ updateStatus = true } = {}) => {
+        if (qrScanner) {
+            try {
+                await qrScanner.stop();
+            } catch (error) {
+                console.error('Error stopping scanner', error);
+            }
+        }
+        resetScannerUi();
+        if (updateStatus) {
+            setStatus('Scanner stopped.');
+        }
+    };
+
+    fetchButton?.addEventListener('click', async () => {
+        await fetchIdentity(verificationUrlInput.value.trim());
+    });
+
+    decodeImageButton?.addEventListener('click', async () => {
+        await decodeQrImage(qrImageInput?.files?.[0] || null);
+    });
+
+    qrImageInput?.addEventListener('change', () => {
+        const file = qrImageInput.files?.[0];
+        if (qrImageName) qrImageName.textContent = file ? file.name : 'No file chosen';
+    });
+
+    startButton?.addEventListener('click', async () => {
+        if (qrReaderElement) qrReaderElement.hidden = false;
+        if (startButton) startButton.disabled = true;
+        if (stopButton) stopButton.disabled = false;
+        setStatus('Starting camera...');
+
+        try {
+            qrScanner = qrScanner || await window.createQrScanner({
+                container: qrReaderElement,
+                onStatus: setStatus,
+                onDetect: async (decodedText) => {
+                    if (verificationUrlInput) verificationUrlInput.value = decodedText;
+                    await fetchIdentity(decodedText);
+                    resetScannerUi();
+                },
+                videoConstraints: {
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 },
+                    frameRate: { ideal: 24, max: 30 },
+                },
+            });
+            await qrScanner.start();
+        } catch (error) {
+            setStatus(error.message || `Unable to start the camera: ${error}`);
+            await stopScanner({ updateStatus: false });
+        }
+    });
+
+    stopButton?.addEventListener('click', async () => {
+        await stopScanner();
+    });
+});
+</script>
 {% endblock %}

@@ -51,13 +51,16 @@
 
         {% if selected_fields and participants %}
             <div class="table-shell participant-table-shell">
-                <table>
+                <table style="min-width: {{ sheet_min_width }};">
+                    <colgroup>
+                        {% for column in sheet_columns %}
+                            <col style="width: {{ column.css_width }};">
+                        {% endfor %}
+                    </colgroup>
                     <thead>
                         <tr>
-                            <th>S.No</th>
-                            <th>Submitted At</th>
-                            {% for field in selected_fields %}
-                                <th>{{ field.field_label }}</th>
+                            {% for column in sheet_columns %}
+                                <th>{{ column.label }}</th>
                             {% endfor %}
                         </tr>
                     </thead>

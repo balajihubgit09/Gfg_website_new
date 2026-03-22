@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Other College Access | {{ event.title }}{% endblock %}
+
+{% block content %}
+<main class="page-shell login-shell signup-shell clean-page-shell">
+    <section class="admin-login-grid clean-login-grid">
+        <section class="glass-card admin-login-brief clean-section-card" data-animate="fade-up">
+            <div class="clean-copy-stack">
+                <p class="eyebrow">Other College Access</p>
+                <h1 class="gradient-title">Continue for {{ event.title }}</h1>
+                <p class="section-copy">Complete this one-time access form and continue to registration.</p>
+            </div>
+            <div class="admin-check-list clean-check-list">
+                <span>{{ event.venue }}</span>
+                <span>{{ event.event_date }}</span>
+            </div>
+        </section>
+
+        <section class="glass-card admin-login-panel clean-section-card" data-animate="fade-up">
+            <form class="form-grid modern-form" method="post">
+                <label class="field full-span">
+                    <input type="text" name="name" placeholder=" " autocomplete="name" value="{{ request.form.get('name', '') }}" required>
+                    <span>Full Name</span>
+                </label>
+                <label class="field full-span">
+                    <input type="email" name="email" placeholder=" " autocomplete="email" value="{{ request.form.get('email', '') }}" required>
+                    <span>Email</span>
+                </label>
+                <label class="field full-span">
+                    <input type="tel" name="phone_number" placeholder=" " autocomplete="tel" value="{{ request.form.get('phone_number', '') }}" required>
+                    <span>Phone Number</span>
+                </label>
+                <label class="field full-span">
+                    <input type="text" name="college_name" placeholder=" " value="{{ request.form.get('college_name', '') }}" required>
+                    <span>College Name</span>
+                </label>
+                <label class="field full-span">
+                    <input type="text" name="course" placeholder=" " value="{{ request.form.get('course', '') }}" required>
+                    <span>Course / Program</span>
+                </label>
+                <button class="button button-primary glow-button full-span" type="submit">Continue</button>
+            </form>
+        </section>
+    </section>
+</main>
+{% endblock %}

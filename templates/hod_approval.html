@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}HOD Approval | {{ event_title }}{% endblock %}
+
+{% block content %}
+<main class="page-shell">
+    <section class="page-hero glass-card" data-animate="fade-up">
+        <p class="eyebrow">HOD Authorization</p>
+        <h1 class="gradient-title">{{ department_name }}</h1>
+        <p class="section-copy">Approve the selected students for {{ event_title }} scheduled on {{ event_date }} from {{ event_start_time }} to {{ event_end_time }}.</p>
+    </section>
+
+    <section class="glass-card form-panel" data-animate="fade-up">
+        <div class="section-head">
+            <div>
+                <p class="eyebrow">Selected Students</p>
+                <h2 class="gradient-title">Approval batch</h2>
+            </div>
+            {% if approval_complete %}
+                <span class="chip">Already Authorized</span>
+            {% elif approval_window_closed %}
+                <span class="chip">Approval Window Closed</span>
+            {% else %}
+                <span class="chip">Pending Approval</span>
+            {% endif %}
+        </div>
+
+        <div class="admin-stack-list">
+            {% for registration in registrations %}
+                <article class="glass-card admin-list-card">
+                    <div class="admin-list-copy">
+                        <h3>{{ registration.student_name }}</h3>
+                        <p>{{ registration.register_number }} | {{ registration.course }}</p>
+                        <div class="meta-list"><span>{{ registration.od_status }}</span><span>{{ registration.hod_email }}</span></div>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+
+        {% if not approval_complete and not approval_window_closed %}
+            <article class="glass-card compact-card data-card empty-card"><h3>Approval window</h3><p>This link stays active until 10 minutes before the event ends. Final approval deadline: {{ approval_deadline_at }}.</p></article>
+            <form method="post" class="modern-form">
+                <button class="button button-primary" type="submit">Approve All</button>
+            </form>
+        {% elif approval_window_closed and not approval_complete %}
+            <article class="glass-card compact-card data-card empty-card"><h3>Approval window closed</h3><p>This approval link expired 10 minutes before the event end time. No further OD approvals can be granted from this page.</p></article>
+        {% else %}
+            <article class="glass-card compact-card data-card empty-card"><h3>Approval complete</h3><p>These students are already marked as HOD authorized and are eligible for gatekeeper check-in.</p></article>
+        {% endif %}
+    </section>
+</main>
+{% endblock %}

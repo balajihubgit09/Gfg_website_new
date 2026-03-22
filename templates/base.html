@@ -51,6 +51,7 @@
                             <a class="header-auth-link" href="{{ url_for('profile') }}">Profile</a>
                             <a class="header-auth-link header-auth-link-primary" href="{{ url_for('logout') }}">Logout</a>
                         {% else %}
+                            <a class="header-auth-link" href="{{ url_for('login') }}">Login</a>
                             <a class="header-auth-link header-auth-link-primary" href="{{ url_for('signup') }}">Create Account</a>
                         {% endif %}
                     </div>
@@ -117,6 +118,7 @@
                                     <a class="settings-link" href="{{ url_for('profile') }}">Profile</a>
                                     <a class="settings-link settings-link-danger" href="{{ url_for('logout') }}">Logout</a>
                                 {% else %}
+                                    <a class="settings-link" href="{{ url_for('login') }}">Login</a>
                                     <a class="settings-link" href="{{ url_for('signup') }}">Create account</a>
                                 {% endif %}
                             </div>
@@ -143,11 +145,16 @@
                 <strong>&copy; GfG Campus Club RIT</strong>
                 <p>Student challenges, workshops, events, and community learning in one place.</p>
             </div>
-            <a class="text-link footer-login" href="{{ url_for('signup') }}">Create Account</a>
+            {% if current_user %}
+                <a class="text-link footer-login" href="{{ url_for('profile') }}">Profile</a>
+            {% else %}
+                <a class="text-link footer-login" href="{{ url_for('login') }}">Login</a>
+            {% endif %}
         </footer>
     </div>
 
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% block scripts %}{% endblock %}
 </body>
 </html>
 

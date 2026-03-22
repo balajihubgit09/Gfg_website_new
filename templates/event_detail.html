@@ -3,14 +3,17 @@
 {% block title %}{{ event.title }} | Events{% endblock %}
 
 {% block content %}
-<main class="page-shell">
-    <section class="page-hero glass-card" data-animate="fade-up">
+<main class="page-shell clean-page-shell">
+    <section class="page-hero glass-card clean-hero-card" data-animate="fade-up">
         <p class="eyebrow">Event Detail</p>
-        <h1 class="gradient-title">{{ event.title }}</h1>
+        <div class="event-title-row">
+            <h1 class="gradient-title">{{ event.title }}</h1>
+            {% if event.registration_closes_at and event.registration_is_open %}<span class="event-close-timer" data-event-close-countdown="{{ event.registration_closes_at }}"></span>{% endif %}
+        </div>
         <p class="section-copy">{{ event.description }}</p>
     </section>
 
-    <section class="glass-card event-card" data-animate="fade-up">
+    <section class="glass-card event-card clean-section-card" data-animate="fade-up">
         <div class="detail-grid">
             <div><span class="meta-label">Date</span><strong>{{ event.event_date }}</strong></div>
             <div><span class="meta-label">Location</span><strong>{{ event.venue }}</strong></div>
@@ -22,37 +25,123 @@
         <div class="progress-bar"><span style="width: {{ event.registration_progress }}%;"></span></div>
     </section>
 
-    <section class="glass-card form-panel" data-animate="fade-up">
+    <section class="glass-card form-panel clean-section-card" data-animate="fade-up">
         <div class="section-head">
             <div>
                 <p class="eyebrow">Event Registration</p>
-                <h2 class="gradient-title">Register for this event</h2>
+                <h2 class="gradient-title">Registration</h2>
             </div>
         </div>
 
-        {% if registration_closed %}
+        {% if existing_registration %}
+            <article class="glass-card compact-card data-card empty-card">
+                <h3>You have already been registered</h3>
+                <p>Sit back and chill. Your registration for this event is already recorded.</p>
+                <div class="meta-list">
+                    <span>Status: {{ existing_registration.od_status }}</span>
+                    {% if existing_registration.is_selected %}<span>Admin Selected</span>{% endif %}
+                    {% if existing_registration.hod_authorized_at %}<span>HOD Authorized</span>{% endif %}
+                    <span>Submitted: {{ existing_registration.created_at }}</span>
+                </div>
+            </article>
+        {% elif registration_closed %}
             <article class="glass-card compact-card data-card empty-card"><h3>registration is closed</h3><p>The admin has closed registration for this event.</p></article>
         {% elif registration_is_full %}
             <article class="glass-card compact-card data-card empty-card"><h3>registration for the event is completed</h3><p>The required number of registrations has already been reached.</p></article>
         {% elif registration_fields or contact_email_required %}
             <form class="form-grid modern-form" method="post">
+                {% if current_user and current_user.register_number %}
+                    <article class="glass-card compact-card data-card full-span user-identity-preview">
+                        <h3>Registering as</h3>
+                        <p><strong>Name:</strong> {{ current_user.name }}</p>
+                        <p><strong>Registration Number:</strong> {{ current_user.register_number }}</p>
+                        <p><strong>Department:</strong> {{ current_user.department_name }}</p>
+                    </article>
+                {% elif event.interact_other_colleges and other_college_access %}
+                    <article class="glass-card compact-card data-card full-span user-identity-preview">
+                        <h3>Other college access</h3>
+                        <p><strong>Name:</strong> {{ other_college_access.name }}</p>
+                        <p><strong>College:</strong> {{ other_college_access.college_name }}</p>
+                        <p><strong>Course:</strong> {{ other_college_access.course }}</p>
+                        <p><strong>Email:</strong> {{ other_college_access.email }}</p>
+                    </article>
+                {% else %}
+                    <input id="event-verification-url" type="hidden" name="verification_url" value="{{ request.form.get('verification_url', '') }}">
+                    <input id="event-student-name" type="hidden" name="student_name" value="{{ request.form.get('student_name', '') }}">
+                    <input id="event-register-number" type="hidden" name="register_number" value="{{ request.form.get('register_number', '') }}">
+                    <input id="event-course" type="hidden" name="course" value="{{ request.form.get('course', '') }}">
+                    <input id="event-department-code" type="hidden" name="department_code" value="{{ request.form.get('department_code', '') }}">
+                    <input id="event-department-name" type="hidden" name="department_name" value="{{ request.form.get('department_name', '') }}">
+                    <input id="event-department-slug" type="hidden" name="department_slug" value="{{ request.form.get('department_slug', '') }}">
+                    <input id="event-hod-email" type="hidden" name="hod_email" value="{{ request.form.get('hod_email', '') }}">
+                    {% if event.interact_other_colleges %}
+                        <article class="glass-card compact-card data-card full-span">
+                            <h3>Choose your registration path</h3>
+                            <div class="cta-row">
+                                <button class="button button-primary" type="button" id="show-rit-verification">From RIT? Click here</button>
+                                <a class="button button-secondary" href="{{ url_for('other_college_event_login', event_id=event.id) }}">Not from RIT? Use this link</a>
+                            </div>
+                            <p class="section-copy">Choose the correct path and continue.</p>
+                        </article>
+                    {% endif %}
+                    <article class="glass-card scanner-panel full-span signup-scanner" {% if event.interact_other_colleges %}id="rit-verification-panel" hidden{% endif %}>
+                        <div class="section-head">
+                            <div>
+                                <p class="eyebrow">ID Verification</p>
+                                <h3>Verify identity</h3>
+                            </div>
+                        </div>
+                        <div class="scanner-panel-copy">
+                            <div class="cta-row">
+                                <button class="button button-primary" type="button" id="event-start-qr-scan">Scan ID to Verify</button>
+                                <button class="button button-secondary" type="button" id="event-stop-qr-scan" disabled>Stop Scanner</button>
+                            </div>
+                            <label class="field full-span">
+                                <input id="event-verification-url-input" type="url" placeholder=" " value="{{ request.form.get('verification_url', '') }}">
+                                <span>Paste the official RIT verification link</span>
+                            </label>
+                            <button class="button button-secondary" type="button" id="event-fetch-identity">Fetch from link</button>
+                            <div class="field full-span file-field-shell">
+                                <span class="file-field-label">Or upload a QR image</span>
+                                <label class="file-picker" for="event-qr-image-input">
+                                    <span class="file-picker-button">Choose QR Image</span>
+                                    <span class="file-picker-name" id="event-qr-image-name">No file chosen</span>
+                                </label>
+                                <input id="event-qr-image-input" class="file-input-hidden" type="file" accept="image/*" capture="environment">
+                            </div>
+                            <button class="button button-secondary" type="button" id="event-decode-qr-image">Read QR from image</button>
+                            <p class="scanner-status" id="event-scanner-status">Identity not verified yet.</p>
+                        </div>
+                        <div class="scanner-view-shell">
+                            <div id="event-qr-reader" class="qr-reader" hidden></div>
+                        </div>
+                    </article>
+
+                    <article class="glass-card compact-card data-card full-span user-identity-preview">
+                        <h3>Verified identity</h3>
+                        <p><strong>Name:</strong> <span id="event-preview-name">{{ request.form.get('student_name', 'Not verified yet') }}</span></p>
+                        <p><strong>Registration Number:</strong> <span id="event-preview-register">{{ request.form.get('register_number', 'Not verified yet') }}</span></p>
+                        <p><strong>Department:</strong> <span id="event-preview-department">{{ request.form.get('department_name', 'Not verified yet') }}</span></p>
+                    </article>
+                {% endif %}
+
                 {% if contact_email_required %}
                     <label class="field full-span">
-                        <input name="contact_email" type="email" placeholder=" " value="{{ request.form.get('contact_email', '') }}" required>
-                        <span>Participant Email</span>
+                        <input id="event-contact-email" name="contact_email" type="email" placeholder=" " value="{{ request.form.get('contact_email', registration_form_defaults.contact_email) }}" required>
+                        <span>Contact Email</span>
                     </label>
                 {% endif %}
                 {% for field in registration_fields %}
                     <label class="field {% if field.field_type == 'textarea' %}full-span{% endif %}">
                         {% if field.field_type == 'select' %}
-                            <select name="field_{{ field.id }}" {% if field.is_required %}required{% endif %}>
-                                <option value="" disabled {% if not request.form.get('field_' ~ field.id) %}selected{% endif %}></option>
+                            <select name="field_{{ field.id }}" {% set selected_value = request.form.get('field_' ~ field.id, registration_form_defaults.field_defaults.get(field.id, '')) %} {% if field.is_required %}required{% endif %}>
+                                <option value="" disabled {% if not selected_value %}selected{% endif %}></option>
                                 {% for option in field.option_values %}
-                                    <option value="{{ option }}" {% if request.form.get('field_' ~ field.id) == option %}selected{% endif %}>{{ option }}</option>
+                                    <option value="{{ option }}" {% if selected_value == option %}selected{% endif %}>{{ option }}</option>
                                 {% endfor %}
                             </select>
                         {% else %}
-                            <input name="field_{{ field.id }}" type="text" placeholder=" " value="{{ request.form.get('field_' ~ field.id, '') }}" {% if field.is_required %}required{% endif %}>
+                            <input name="field_{{ field.id }}" type="text" placeholder=" " value="{{ request.form.get('field_' ~ field.id, registration_form_defaults.field_defaults.get(field.id, '')) }}" {% if field.is_required %}required{% endif %}>
                         {% endif %}
                         <span>{{ field.field_label }}</span>
                     </label>
@@ -64,4 +153,187 @@
         {% endif %}
     </section>
 </main>
+{% endblock %}
+
+
+
+{% block scripts %}
+{% if not current_user or not current_user.register_number %}
+<script src="{{ url_for('static', filename='js/qr-scanner.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const startButton = document.getElementById('event-start-qr-scan');
+    const stopButton = document.getElementById('event-stop-qr-scan');
+    const fetchButton = document.getElementById('event-fetch-identity');
+    const qrReaderElement = document.getElementById('event-qr-reader');
+    const verificationUrlInput = document.getElementById('event-verification-url-input');
+    const verificationUrlHidden = document.getElementById('event-verification-url');
+    const qrImageInput = document.getElementById('event-qr-image-input');
+    const qrImageName = document.getElementById('event-qr-image-name');
+    const decodeImageButton = document.getElementById('event-decode-qr-image');
+    const scannerStatus = document.getElementById('event-scanner-status');
+    const showRitButton = document.getElementById('show-rit-verification');
+    const ritVerificationPanel = document.getElementById('rit-verification-panel');
+
+    const identityFields = {
+        student_name: document.getElementById('event-student-name'),
+        register_number: document.getElementById('event-register-number'),
+        course: document.getElementById('event-course'),
+        department_name: document.getElementById('event-department-name'),
+        department_code: document.getElementById('event-department-code'),
+        department_slug: document.getElementById('event-department-slug'),
+        hod_email: document.getElementById('event-hod-email'),
+        contact_email: document.getElementById('event-contact-email'),
+    };
+    const previewNodes = {
+        student_name: document.getElementById('event-preview-name'),
+        register_number: document.getElementById('event-preview-register'),
+        department_name: document.getElementById('event-preview-department'),
+    };
+    let qrScanner = null;
+
+    const setStatus = (message) => {
+        if (scannerStatus) scannerStatus.textContent = message;
+    };
+
+    const resetScannerUi = () => {
+        if (qrReaderElement) qrReaderElement.hidden = true;
+        if (startButton) startButton.disabled = false;
+        if (stopButton) stopButton.disabled = true;
+    };
+
+    const applyIdentity = (identity) => {
+        if (verificationUrlInput) verificationUrlInput.value = identity.verification_url || '';
+        if (verificationUrlHidden) verificationUrlHidden.value = identity.verification_url || '';
+        if (identityFields.student_name) identityFields.student_name.value = identity.student_name || '';
+        if (identityFields.register_number) identityFields.register_number.value = identity.register_number || '';
+        if (identityFields.course) identityFields.course.value = identity.course || '';
+        if (identityFields.department_name) identityFields.department_name.value = identity.department_name || '';
+        if (identityFields.department_code) identityFields.department_code.value = identity.department_code || '';
+        if (identityFields.department_slug) identityFields.department_slug.value = identity.department_slug || '';
+        if (identityFields.hod_email) identityFields.hod_email.value = identity.hod_email || '';
+        if (identityFields.contact_email && identity.participant_email && !identityFields.contact_email.value) {
+            identityFields.contact_email.value = identity.participant_email;
+        }
+        if (previewNodes.student_name) previewNodes.student_name.textContent = identity.student_name || 'Not verified yet';
+        if (previewNodes.register_number) previewNodes.register_number.textContent = identity.register_number || 'Not verified yet';
+        if (previewNodes.department_name) previewNodes.department_name.textContent = identity.department_name || 'Not verified yet';
+        setStatus(`Identity securely loaded for ${identity.student_name}.`);
+    };
+
+    const fetchIdentity = async (verificationUrl) => {
+        if (!verificationUrl) {
+            setStatus('Paste or scan a valid RIT verification link first.');
+            return;
+        }
+        try {
+            setStatus('Verifying RIT identity...');
+            const response = await fetch('{{ url_for("api_rit_identity") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ verification_url: verificationUrl }),
+            });
+            const payload = await response.json();
+            if (!response.ok || !payload.ok) {
+                setStatus(payload.error || 'Identity verification failed.');
+                return;
+            }
+            applyIdentity(payload.identity);
+        } catch (error) {
+            setStatus('Network error fetching identity.');
+        }
+    };
+
+    const decodeQrImage = async (file) => {
+        if (!file) {
+            setStatus('Choose a QR image first.');
+            return;
+        }
+        try {
+            setStatus('Reading QR image...');
+            const formData = new FormData();
+            formData.append('qr_image', file);
+            const response = await fetch('{{ url_for("api_decode_qr_image") }}', {
+                method: 'POST',
+                body: formData,
+            });
+            const payload = await response.json();
+            if (!response.ok || !payload.ok) {
+                setStatus(payload.error || 'Could not decode the QR image.');
+                return;
+            }
+            if (verificationUrlInput) verificationUrlInput.value = payload.decoded_text;
+            await fetchIdentity(payload.decoded_text);
+        } catch (error) {
+            setStatus('Network error decoding image.');
+        }
+    };
+
+    const stopScanner = async ({ updateStatus = true } = {}) => {
+        if (qrScanner) {
+            try {
+                await qrScanner.stop();
+            } catch (error) {
+                console.error('Error stopping scanner', error);
+            }
+        }
+        resetScannerUi();
+        if (updateStatus) {
+            setStatus('Scanner stopped.');
+        }
+    };
+
+    fetchButton?.addEventListener('click', async () => {
+        await fetchIdentity(verificationUrlInput.value.trim());
+    });
+
+    decodeImageButton?.addEventListener('click', async () => {
+        await decodeQrImage(qrImageInput?.files?.[0] || null);
+    });
+
+    showRitButton?.addEventListener('click', () => {
+        if (ritVerificationPanel) ritVerificationPanel.hidden = false;
+        showRitButton.disabled = true;
+        setStatus('RIT verification opened. Scan or paste the official RIT verification link.');
+    });
+
+    qrImageInput?.addEventListener('change', () => {
+        const file = qrImageInput.files?.[0];
+        if (qrImageName) qrImageName.textContent = file ? file.name : 'No file chosen';
+    });
+
+    startButton?.addEventListener('click', async () => {
+        if (qrReaderElement) qrReaderElement.hidden = false;
+        if (startButton) startButton.disabled = true;
+        if (stopButton) stopButton.disabled = false;
+        setStatus('Starting camera...');
+
+        try {
+            qrScanner = qrScanner || await window.createQrScanner({
+                container: qrReaderElement,
+                onStatus: setStatus,
+                onDetect: async (decodedText) => {
+                    if (verificationUrlInput) verificationUrlInput.value = decodedText;
+                    await fetchIdentity(decodedText);
+                    resetScannerUi();
+                },
+                videoConstraints: {
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 },
+                    frameRate: { ideal: 24, max: 30 },
+                },
+            });
+            await qrScanner.start();
+        } catch (error) {
+            setStatus(error.message || `Unable to start the camera: ${error}`);
+            await stopScanner({ updateStatus: false });
+        }
+    });
+
+    stopButton?.addEventListener('click', async () => {
+        await stopScanner();
+    });
+});
+</script>
+{% endif %}
 {% endblock %}

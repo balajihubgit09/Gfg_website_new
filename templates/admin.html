@@ -3,18 +3,12 @@
 {% block title %}Dashboard | GFG Challenge Portal{% endblock %}
 
 {% block content %}
-<main class="page-shell dashboard-shell admin-dashboard-shell">
-    <section class="page-hero glass-card admin-hero admin-hero-refined" data-animate="fade-up">
-        <div class="page-hero-copy">
-            <p class="eyebrow">Coordinator Dashboard</p>
-            <h1 class="gradient-title">Admin Dashboard</h1>
-            <p class="section-copy">A cleaner control room for registrations, people, events, resources, and team operations.</p>
-        </div>
-        <div class="admin-hero-side">
-            <div class="admin-status-chip">
-                <span class="chip">Live Control</span>
-                <p>Monitor events, people, and resources from one internal workspace.</p>
-            </div>
+<main class="page-shell dashboard-shell admin-dashboard-shell clean-page-shell">
+    <section class="page-hero glass-card admin-hero admin-hero-refined clean-hero-card" data-animate="fade-up">
+        <div class="page-hero-copy clean-copy-stack">
+            <p class="eyebrow">Admin Dashboard</p>
+            <h1 class="gradient-title">Control the platform from one page.</h1>
+            <p class="section-copy">Events, roles, approvals, attendance, and resources.</p>
         </div>
     </section>
 
@@ -26,39 +20,45 @@
     </section>
 
     <section class="admin-layout-grid admin-layout-grid-single" data-animate="fade-up">
-        <section class="glass-section glass-card admin-section-card admin-form-card">
+        <section class="glass-section glass-card admin-section-card admin-form-card clean-section-card">
             <div class="section-head admin-section-head">
                 <div>
                     <p class="eyebrow">Add Event</p>
                     <h2 class="gradient-title">Publish club events</h2>
                 </div>
-                <p class="section-copy">Set registration rules, contact requirements, field definitions, and limits from one form.</p>
+                <p class="section-copy">Add an event with only the fields that are needed.</p>
             </div>
-            <form class="form-grid modern-form admin-event-form" method="post">
+            <form class="form-grid modern-form admin-event-form" method="post" id="admin-add-event-form">
                 <input type="hidden" name="action" value="add_event">
                 <label class="field"><input name="title" type="text" placeholder=" " required><span>Title</span></label>
                 <label class="field"><input name="event_date" type="date" placeholder=" " required><span>Date</span></label>
+                <label class="field"><input id="admin-registration-deadline" name="registration_deadline" type="date" placeholder=" " required><span>Registration deadline</span></label>
+                <label class="field"><input id="admin-registration-closing-time" name="registration_closing_time" type="time" placeholder=" " required value="23:59"><span>Registration closing time</span></label>
+                <label class="field"><input name="event_start_time" type="time" placeholder=" " required value="09:00"><span>Event start time</span></label>
+                <label class="field"><input name="event_end_time" type="time" placeholder=" " required value="23:59"><span>Event end time</span></label>
                 <label class="field"><input name="location" type="text" placeholder=" " required><span>Location</span></label>
                 <label class="field"><input name="category" type="text" placeholder=" "><span>Category</span></label>
                 <label class="field full-span"><textarea name="description" rows="4" placeholder=" " required></textarea><span>Description</span></label>
                 <label class="field"><input name="registration_limit" type="number" min="0" step="1" placeholder=" " required><span>Maximum registrations</span></label>
                 <label class="access-row admin-access-row"><span>Enable event registration</span><input type="checkbox" name="registration_enabled" checked></label>
                 <label class="access-row admin-access-row"><span>Require participant email for contact</span><input type="checkbox" name="contact_email_required"></label>
+                <label class="access-row admin-access-row"><span>Interact with other colleges</span><input type="checkbox" name="interact_other_colleges"></label>
                 <label class="field full-span"><textarea name="registration_fields" rows="8" placeholder=" "></textarea><span>Enter one field name per line. For dropdown options use: Question - Option 1. Option 2. Option 3. Leave this blank if only the participant email should be collected.</span></label>
                 <label class="field full-span"><input name="registration_link" type="url" placeholder=" "><span>Optional external link</span></label>
+                <p class="field-hint full-span" id="admin-registration-deadline-preview">Choose the registration deadline date and time to see the exact closing moment in plain language.</p>
                 <button class="button button-primary glow-button full-span" type="submit" data-loading-text="Adding event...">Add Event</button>
             </form>
         </section>
     </section>
 
     <section class="admin-layout-grid admin-layout-grid-secondary" data-animate="fade-up">
-        <section class="glass-section glass-card admin-section-card">
+        <section class="glass-section glass-card admin-section-card clean-section-card">
             <div class="section-head admin-section-head">
                 <div>
                     <p class="eyebrow">User Roles</p>
-                    <h2 class="gradient-title">Coordinator access</h2>
+                    <h2 class="gradient-title">Core access</h2>
                 </div>
-                <p class="section-copy">Promote participants when they need backend control, and demote when they no longer do.</p>
+                <p class="section-copy">Manage core and member access.</p>
             </div>
             <div class="admin-stack-list">
                 {% for member in users %}
@@ -70,12 +70,12 @@
                         </div>
                         <form method="post" class="admin-inline-form">
                             <input type="hidden" name="user_id" value="{{ member.id }}">
-                            {% if member.role in ['admin', 'coordinator'] %}
+                            {% if member.role in ['admin', 'core'] %}
                                 <input type="hidden" name="action" value="demote_user">
-                                <button class="button button-secondary" type="submit" {% if current_user and current_user.id == member.id %}disabled{% endif %}>Remove Coordinator</button>
+                                <button class="button button-secondary" type="submit" {% if current_user and current_user.id == member.id %}disabled{% endif %}>Remove Core Access</button>
                             {% else %}
                                 <input type="hidden" name="action" value="promote_user">
-                                <button class="button button-primary" type="submit">Make Coordinator</button>
+                                <button class="button button-primary" type="submit">Make Core</button>
                             {% endif %}
                         </form>
                     </article>
@@ -84,20 +84,154 @@
         </section>
     </section>
 
-    <section class="glass-section glass-card admin-section-card" data-animate="fade-up">
+    <section class="glass-section glass-card admin-section-card clean-section-card" data-animate="fade-up">
+        <div class="section-head admin-section-head">
+            <div>
+                <p class="eyebrow">OD Workflow</p>
+                <h2 class="gradient-title">Identity verified registrants</h2>
+            </div>
+            <p class="section-copy">Select verified RIT registrations and send one OD batch per HOD.</p>
+        </div>
+        <form method="post" class="admin-section-card">
+            <input type="hidden" name="action" value="notify_hods">
+            <div class="cta-row admin-bulk-actions">
+                <label class="bulk-toggle">
+                    <input type="checkbox" id="select-all-registrants">
+                    <span>Select All Visible</span>
+                </label>
+                <button class="button button-primary" type="submit">Notify HODs</button>
+            </div>
+            <div class="admin-stack-list">
+                {% for registration in hod_registrations %}
+                    <article class="glass-card admin-list-card admin-list-card-rich">
+                        <label class="bulk-select-cell">
+                            <input class="registration-checkbox" type="checkbox" name="registration_ids" value="{{ registration.id }}">
+                        </label>
+                        <div class="admin-list-copy">
+                            <h3>{{ registration.student_name }}</h3>
+                            <p>{{ registration.register_number }} | {{ registration.course }}</p>
+                            <div class="meta-list">
+                                <span>{{ registration.event_title }}</span>
+                                <span>{{ registration.department_name }}</span>
+                                <span>{{ registration.od_status }}</span>
+                                <span>{{ registration.hod_email }}</span>
+                            </div>
+                        </div>
+                    </article>
+                {% else %}
+                    <article class="glass-card compact-card data-card empty-card"><h3>No RIT OD candidates yet</h3><p>Only RIT student registrations appear here because other-college registrations do not require HOD approval.</p></article>
+                {% endfor %}
+            </div>
+        </form>
+    </section>
+
+    <section class="glass-section glass-card admin-section-card clean-section-card" data-animate="fade-up">
+        <div class="section-head admin-section-head">
+            <div>
+                <p class="eyebrow">Approval Notifications</p>
+                <h2 class="gradient-title">Recent HOD accepted ODs</h2>
+            </div>
+            <p class="section-copy">Recent approved OD records.</p>
+        </div>
+        <div class="admin-stack-list">
+            {% for approval in recent_hod_approvals %}
+                <article class="glass-card admin-list-card admin-list-card-rich">
+                    <div class="admin-list-copy">
+                        <h3>{{ approval.student_name }}</h3>
+                        <p>{{ approval.event_title }}</p>
+                        <div class="meta-list">
+                            <span>{{ approval.register_number }}</span>
+                            <span>{{ approval.course }}</span>
+                            <span>{{ approval.department_name }}</span>
+                            <span>{{ approval.hod_email }}</span>
+                            <span>{{ approval.hod_authorized_at }}</span>
+                        </div>
+                    </div>
+                </article>
+            {% else %}
+                <article class="glass-card compact-card data-card empty-card"><h3>No HOD approvals yet</h3><p>Approved OD notifications will appear here after HODs accept student requests.</p></article>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="admin-layout-grid admin-layout-grid-secondary" data-animate="fade-up">
+        <section class="glass-section glass-card admin-section-card clean-section-card">
+            <div class="section-head admin-section-head">
+                <div>
+                    <p class="eyebrow">HOD Mail Summary</p>
+                    <h2 class="gradient-title">Latest HOD notifications</h2>
+                </div>
+                <p class="section-copy">Recent OD mail batches.</p>
+            </div>
+            <div class="admin-stack-list">
+                {% for link in hod_links %}
+                    <article class="glass-card admin-list-card admin-list-card-rich">
+                        <div class="admin-list-copy">
+                            <h3>{{ link.department_name }}</h3>
+                            <p>{{ link.event_title }}</p>
+                            <div class="meta-list">
+                                <span>{{ link.hod_email }}</span>
+                                <span>{{ link.hod_notified_at }}</span>
+                                <span>{{ link.students|length }} students</span>
+                            </div>
+                            <div class="meta-list">
+                                {% for student in link.students %}
+                                    <span>{{ student.student_name }}{% if student.register_number %} | {{ student.register_number }}{% endif %}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </article>
+                {% else %}
+                    <article class="glass-card compact-card data-card empty-card"><h3>No HOD notifications yet</h3><p>HOD mail summaries will appear here after you notify departments.</p></article>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="glass-section glass-card admin-section-card clean-section-card">
+            <div class="section-head admin-section-head">
+                <div>
+                    <p class="eyebrow">Gatekeeper Summary</p>
+                    <h2 class="gradient-title">Checked-in attendance</h2>
+                </div>
+            </div>
+            <div class="admin-stack-list">
+                {% for row in attendance_summary %}
+                    <article class="glass-card admin-list-card">
+                        <div class="admin-list-copy">
+                            <h3>{{ row.event_title }}</h3>
+                            <p>{{ row.checked_in_count }} authorized students checked in</p>
+                        </div>
+                    </article>
+                {% else %}
+                    <article class="glass-card compact-card data-card empty-card"><h3>No attendance captured yet</h3><p>Gatekeeper scans will appear here once event-day check-in begins.</p></article>
+                {% endfor %}
+            </div>
+        </section>
+    </section>
+
+    <section class="glass-section glass-card admin-section-card clean-section-card" data-animate="fade-up">
         <div class="section-head admin-section-head">
             <div>
                 <p class="eyebrow">Manage Events</p>
                 <h2 class="gradient-title">Current event list</h2>
             </div>
-            <p class="section-copy">Each event card shows status, registration fill, and direct control actions.</p>
+            <div class="cta-row">
+                <p class="section-copy">Open, close, export, check in, or delete an event.</p>
+                <form method="post" class="admin-inline-form" onsubmit="return confirm('Delete all events and all related event data? This cannot be undone.');">
+                    <input type="hidden" name="action" value="delete_all_events">
+                    <button class="button button-secondary" type="submit">Delete All Events</button>
+                </form>
+            </div>
         </div>
         <div class="admin-event-grid">
             {% for item in managed_events %}
                 <article class="glass-card admin-event-card">
                     <div class="admin-card-top">
                         <div>
-                            <h3>{{ item.title }}</h3>
+                            <div class="event-title-row">
+                                <h3>{{ item.title }}</h3>
+                                {% if item.registration_closes_at and item.registration_is_open %}<span class="event-close-timer" data-event-close-countdown="{{ item.registration_closes_at }}"></span>{% endif %}
+                            </div>
                             <p>{{ item.location }}</p>
                         </div>
                         <span class="chip">{{ item.registration_status_label }}</span>
@@ -108,8 +242,9 @@
                         <span>Remaining: {{ item.remaining_slots if item.remaining_slots is not none else 'Unlimited' }}</span>
                     </div>
                     <div class="progress-bar"><span style="width: {{ item.registration_progress }}%;"></span></div>
-                    <div class="admin-card-actions">
+                    <div class="admin-card-actions admin-card-actions-stack">
                         <a class="button button-primary full-width-button" href="{{ url_for('event_registration_list', event_id=item.id) }}">Generate List</a>
+                        <a class="button button-secondary full-width-button" href="{{ url_for('gatekeeper_checkin', event_id=item.id) }}">Gatekeeper Check-in</a>
                         <form method="post" class="admin-inline-form full-width-form">
                             <input type="hidden" name="action" value="toggle_event_registration">
                             <input type="hidden" name="event_id" value="{{ item.id }}">
@@ -129,14 +264,24 @@
     </section>
 
     <section class="admin-layout-grid admin-layout-grid-single" data-animate="fade-up">
-        <section class="glass-section glass-card admin-section-card">
+        <section class="glass-section glass-card admin-section-card clean-section-card">
             <div class="section-head admin-section-head">
                 <div>
                     <p class="eyebrow">Manage Resources</p>
-                    <h2 class="gradient-title">Current resource list</h2>
+                    <h2 class="gradient-title">Add and manage resources</h2>
                 </div>
-                <p class="section-copy">Keep the list updated without making the page feel crowded.</p>
+                <p class="section-copy">Create a resource, then manage the current list below.</p>
             </div>
+            <form class="form-grid modern-form admin-resource-form" method="post">
+                <input type="hidden" name="action" value="add_resource">
+                <label class="field"><input name="title" type="text" placeholder=" " required><span>Title</span></label>
+                <label class="field"><input name="category" type="text" placeholder=" " value="Development"><span>Category</span></label>
+                <label class="field"><input name="difficulty" type="text" placeholder=" " value="Beginner"><span>Difficulty</span></label>
+                <label class="field"><input name="duration" type="text" placeholder=" " value="2 Hours"><span>Duration</span></label>
+                <label class="field full-span"><textarea name="summary" rows="4" placeholder=" " required></textarea><span>Summary</span></label>
+                <label class="field full-span"><input name="url" type="url" placeholder=" " required><span>Resource URL</span></label>
+                <button class="button button-primary glow-button full-span" type="submit" data-loading-text="Adding resource...">Add Resource</button>
+            </form>
             <div class="admin-stack-list">
                 {% for item in managed_resources %}
                     <article class="glass-card admin-list-card">
@@ -158,4 +303,62 @@
         </section>
     </section>
 </main>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const selectAllToggle = document.getElementById('select-all-registrants');
+    const registrationCheckboxes = Array.from(document.querySelectorAll('.registration-checkbox'));
+    if (selectAllToggle && registrationCheckboxes.length > 0) {
+        selectAllToggle.addEventListener('change', () => {
+            registrationCheckboxes.forEach((checkbox) => {
+                checkbox.checked = selectAllToggle.checked;
+            });
+        });
+    }
+
+    const addEventForm = document.getElementById('admin-add-event-form');
+    const deadlineInput = document.getElementById('admin-registration-deadline');
+    const closingTimeInput = document.getElementById('admin-registration-closing-time');
+    const deadlinePreview = document.getElementById('admin-registration-deadline-preview');
+
+    const describeTimeOfDay = (hours) => {
+        if (hours >= 5 && hours < 12) return 'morning';
+        if (hours >= 12 && hours < 17) return 'afternoon';
+        if (hours >= 17 && hours < 20) return 'evening';
+        return 'night';
+    };
+
+    const buildDeadlineSummary = () => {
+        if (!deadlineInput?.value || !closingTimeInput?.value) {
+            return '';
+        }
+        const [year, month, day] = deadlineInput.value.split('-').map(Number);
+        const [hours, minutes] = closingTimeInput.value.split(':').map(Number);
+        if (!year || !month || !day || Number.isNaN(hours) || Number.isNaN(minutes)) {
+            return '';
+        }
+        const date = new Date(year, month - 1, day, hours, minutes);
+        const dayName = date.toLocaleDateString(undefined, { weekday: 'long' });
+        const formattedTime = date.toLocaleTimeString(undefined, {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true,
+        });
+        const timeOfDay = describeTimeOfDay(hours);
+        return `Registration will close on ${dayName} ${timeOfDay} at ${formattedTime}.`;
+    };
+
+    const updateDeadlinePreview = () => {
+        if (!deadlinePreview) {
+            return;
+        }
+        const summary = buildDeadlineSummary();
+        deadlinePreview.textContent = summary || 'Choose the registration deadline date and time to see the exact closing moment in plain language.';
+    };
+
+    deadlineInput?.addEventListener('input', updateDeadlinePreview);
+    closingTimeInput?.addEventListener('input', updateDeadlinePreview);
+    updateDeadlinePreview();
+
+});
+</script>
 {% endblock %}
