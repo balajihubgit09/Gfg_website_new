@@ -40,9 +40,13 @@ try:
 except ModuleNotFoundError:
     psycopg = None
     dict_row = None
+    PSYCOPG_OPERATIONAL_ERROR = Exception
+else:
+    PSYCOPG_OPERATIONAL_ERROR = psycopg.OperationalError
 from flask import (
     Flask,
     abort,
+    current_app,
     flash,
     g,
     jsonify,
@@ -111,7 +115,11 @@ def get_auth_db():
         return None
 
     if "auth_db" not in g:
-        g.auth_db = psycopg.connect(DATABASE_URL, row_factory=dict_row)
+        try:
+            g.auth_db = psycopg.connect(DATABASE_URL, row_factory=dict_row)
+        except PSYCOPG_OPERATIONAL_ERROR as exc:
+            current_app.logger.warning("PostgreSQL auth unavailable; falling back to SQLite auth: %s", exc)
+            g.auth_db = None
     return g.auth_db
 
 
