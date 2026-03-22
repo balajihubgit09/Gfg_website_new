@@ -56,8 +56,9 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 
 BASE_DIR = Path(__file__).resolve().parent
-INSTANCE_DIR = BASE_DIR / "instance"
-DATABASE_PATH = INSTANCE_DIR / "gfg_club.db"
+DEFAULT_INSTANCE_DIR = BASE_DIR / "instance"
+INSTANCE_DIR = Path(os.getenv("INSTANCE_DIR", str(DEFAULT_INSTANCE_DIR))).resolve()
+DATABASE_PATH = Path(os.getenv("DATABASE_PATH", str(INSTANCE_DIR / "gfg_club.db"))).resolve()
 ASSETS_DIR = BASE_DIR / "Assets"
 ADMIN_ROLES = {"admin", "core"}
 MEMBER_ROLES = {"member", "admin", "core"}
@@ -94,9 +95,13 @@ load_env_secured()
 
 def create_app() -> Flask:
     app = Flask(__name__, instance_path=str(INSTANCE_DIR), instance_relative_config=True)
-    app.config.update(SECRET_KEY="gfg-campus-club-rit-2026", DATABASE=str(DATABASE_PATH))
+    app.config.update(
+        SECRET_KEY=os.getenv("SECRET_KEY", "gfg-campus-club-rit-2026"),
+        DATABASE=str(DATABASE_PATH),
+    )
 
     INSTANCE_DIR.mkdir(exist_ok=True)
+    DATABASE_PATH.parent.mkdir(parents=True, exist_ok=True)
 
     with app.app_context():
         init_db()
