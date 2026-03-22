@@ -1,6 +1,7 @@
 (() => {
     const hasBarcodeDetector = 'BarcodeDetector' in window;
     const isProbablyMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '');
+    const rearCameraPattern = /(back|rear|environment|world)/i;
 
     async function listSupportedFormats() {
         if (!hasBarcodeDetector || typeof window.BarcodeDetector.getSupportedFormats !== 'function') {
@@ -153,8 +154,16 @@
             };
         };
 
+        const buildPreferredConstraints = () => {
+            const defaults = buildDefaultConstraints();
+            if (typeof videoConstraints === 'object' && videoConstraints !== null && !Array.isArray(videoConstraints)) {
+                return { ...defaults, ...videoConstraints };
+            }
+            return videoConstraints || defaults;
+        };
+
         const buildFallbackConstraints = () => {
-            const preferred = videoConstraints || buildDefaultConstraints();
+            const preferred = buildPreferredConstraints();
             const withoutFacingMode = typeof preferred === 'object' && preferred !== null
                 ? { ...preferred }
                 : preferred;
@@ -164,6 +173,7 @@
             }
 
             return [
+                isProbablyMobile ? { ...preferred, facingMode: { exact: 'environment' } } : preferred,
                 preferred,
                 withoutFacingMode,
                 { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 24, max: 30 } },
@@ -201,7 +211,11 @@
             if (!sawPermissionError && !sawMissingDeviceError && typeof navigator.mediaDevices.enumerateDevices === 'function') {
                 const devices = await navigator.mediaDevices.enumerateDevices();
                 const videoDevices = devices.filter((device) => device.kind === 'videoinput');
-                for (const videoDevice of videoDevices) {
+                const preferredDevices = [
+                    ...videoDevices.filter((device) => rearCameraPattern.test(device.label || '')),
+                    ...videoDevices.filter((device) => !rearCameraPattern.test(device.label || '')),
+                ];
+                for (const videoDevice of preferredDevices) {
                     if (!videoDevice.deviceId) {
                         continue;
                     }
