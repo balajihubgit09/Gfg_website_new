@@ -11,7 +11,6 @@ from datetime import date, datetime, time, timedelta
 from email.message import EmailMessage
 from functools import wraps
 from pathlib import Path
-from typing import Any
 from urllib.parse import urlparse
 
 try:
@@ -34,19 +33,9 @@ try:
 except ModuleNotFoundError:
     cv2 = None
     np = None
-try:
-    import psycopg
-    from psycopg.rows import dict_row
-except ModuleNotFoundError:
-    psycopg = None
-    dict_row = None
-    PSYCOPG_OPERATIONAL_ERROR = Exception
-else:
-    PSYCOPG_OPERATIONAL_ERROR = psycopg.OperationalError
 from flask import (
     Flask,
     abort,
-    current_app,
     flash,
     g,
     jsonify,
@@ -74,7 +63,6 @@ ASSETS_DIR = BASE_DIR / "Assets"
 ADMIN_ROLES = {"admin", "core"}
 MEMBER_ROLES = {"member", "admin", "core"}
 ENV_SECURED_PATH = BASE_DIR / ".env_secured"
-DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
 RIT_DEPARTMENT_MAP = {
     "20": {"name": "Computer Science and Engineering", "slug": "cse"},
     "03": {"name": "Artificial Intelligence and Machine Learning", "slug": "ai-ml"},
@@ -103,83 +91,6 @@ def load_env_secured() -> None:
 
 
 load_env_secured()
-DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
-
-
-def has_postgres_auth_backend() -> bool:
-    return bool(DATABASE_URL and psycopg is not None)
-
-
-def get_auth_db():
-    if not has_postgres_auth_backend():
-        return None
-
-    if "auth_db" not in g:
-        try:
-            g.auth_db = psycopg.connect(DATABASE_URL, row_factory=dict_row)
-        except PSYCOPG_OPERATIONAL_ERROR as exc:
-            current_app.logger.warning("PostgreSQL auth unavailable; falling back to SQLite auth: %s", exc)
-            g.auth_db = None
-    return g.auth_db
-
-
-def row_value(row: sqlite3.Row | dict[str, Any] | None, key: str, default: Any = None) -> Any:
-    if row is None:
-        return default
-    if isinstance(row, sqlite3.Row):
-        return row[key] if key in row.keys() else default
-    return row.get(key, default)
-
-
-def fetch_user_by_email(email: str):
-    normalized_email = (email or "").strip().lower()
-    auth_db = get_auth_db()
-    if auth_db is not None:
-        with auth_db.cursor() as cur:
-            cur.execute(
-                """
-                SELECT id, name, email, password_hash, role, is_active
-                FROM users
-                WHERE email = %s
-                """,
-                (normalized_email,),
-            )
-            return cur.fetchone()
-    return get_db().execute(
-        "SELECT id, name, email, password_hash, role, is_active FROM users WHERE email = ?",
-        (normalized_email,),
-    ).fetchone()
-
-
-def fetch_user_by_id(user_id: int, backend: str | None = None):
-    resolved_backend = backend or session.get("auth_backend")
-    if resolved_backend == "postgres":
-        auth_db = get_auth_db()
-        if auth_db is not None:
-            with auth_db.cursor() as cur:
-                cur.execute("SELECT * FROM users WHERE id = %s", (user_id,))
-                return cur.fetchone()
-    return get_db().execute(
-        "SELECT * FROM users WHERE id = ?",
-        (user_id,),
-    ).fetchone()
-
-
-def count_admin_accounts() -> int:
-    auth_db = get_auth_db()
-    if auth_db is not None:
-        with auth_db.cursor() as cur:
-            cur.execute(
-                "SELECT COUNT(*) AS total FROM users WHERE role = %s OR role = %s",
-                ("admin", "core"),
-            )
-            row = cur.fetchone()
-            return int(row["total"] or 0) if row else 0
-    row = get_db().execute(
-        "SELECT COUNT(*) FROM users WHERE role = ? OR role = ?",
-        ("admin", "core"),
-    ).fetchone()
-    return int(row[0] or 0)
 
 
 def create_app() -> Flask:
@@ -194,12 +105,7 @@ def create_app() -> Flask:
 
     with app.app_context():
         init_db()
-        if DATABASE_URL and psycopg is None:
-            app.logger.warning("DATABASE_URL is set but psycopg is not installed; falling back to SQLite auth.")
-        elif has_postgres_auth_backend():
-            app.logger.info("Auth backend: PostgreSQL users table via DATABASE_URL")
-        else:
-            app.logger.info("Auth backend: SQLite users table")
+        app.logger.info("Auth backend: SQLite users table")
 
     @app.before_request
     def sync_event_automation() -> None:
@@ -211,9 +117,6 @@ def create_app() -> Flask:
         db = g.pop("db", None)
         if db is not None:
             db.close()
-        auth_db = g.pop("auth_db", None)
-        if auth_db is not None:
-            auth_db.close()
 
     @app.context_processor
     def inject_shell_context() -> dict[str, object | None]:
@@ -1175,11 +1078,15 @@ def create_app() -> Flask:
             email = request.form.get("email", "").strip().lower()
             password = request.form.get("password", "")
 
-            user = fetch_user_by_email(email)
+            db = get_db()
+            user = db.execute(
+                "SELECT id, name, email, password_hash, role, is_active FROM users WHERE email = ?",
+                (email,),
+            ).fetchone()
 
-            if user is None or not check_password_hash(row_value(user, "password_hash", ""), password):
+            if user is None or not check_password_hash(user["password_hash"], password):
                 flash("Incorrect email or password.", "error")
-            elif not bool(row_value(user, "is_active")):
+            elif not bool(user["is_active"]):
                 flash("This account is not active yet.", "error")
             else:
                 if admin_only and not is_admin(user):
@@ -1188,9 +1095,8 @@ def create_app() -> Flask:
                 if not admin_only and is_admin(user):
                     return render_template("admin_access_notice.html")
                 session.clear()
-                session["user_id"] = row_value(user, "id")
-                session["auth_backend"] = "postgres" if has_postgres_auth_backend() and isinstance(user, dict) else "sqlite"
-                flash(f"Welcome back, {row_value(user, 'name', 'member')}.", "success")
+                session["user_id"] = user["id"]
+                flash(f"Welcome back, {user['name']}.", "success")
                 if is_admin(user):
                     return redirect(url_for("admin"))
                 return redirect(url_for("profile"))
@@ -2258,20 +2164,27 @@ def get_current_user() -> sqlite3.Row | None:
         return None
 
     if "current_user" not in g:
-        g.current_user = fetch_user_by_id(int(user_id))
+        g.current_user = get_db().execute(
+            "SELECT * FROM users WHERE id = ?",
+            (user_id,),
+        ).fetchone()
     return g.current_user
 
 
 def is_admin(user: sqlite3.Row | None) -> bool:
-    return user is not None and row_value(user, "role") in ADMIN_ROLES
+    return user is not None and user["role"] in ADMIN_ROLES
 
 
 def is_member(user: sqlite3.Row | None) -> bool:
-    return user is not None and row_value(user, "role") in MEMBER_ROLES
+    return user is not None and user["role"] in MEMBER_ROLES
 
 
 def has_admin_account() -> bool:
-    return bool(count_admin_accounts())
+    row = get_db().execute(
+        "SELECT COUNT(*) FROM users WHERE role = ? OR role = ?",
+        ("admin", "core"),
+    ).fetchone()
+    return bool(row[0])
 
 
 def login_required(view):
@@ -2796,6 +2709,89 @@ def ensure_column(table: str, column: str, definition: str) -> None:
     if column not in existing_columns:
         db.execute(f"ALTER TABLE {table} ADD COLUMN {column} {definition}")
         db.commit()
+
+
+def ensure_default_admin_users() -> None:
+    db = get_db()
+    default_admins = [
+        {
+            "name": "Admin One",
+            "email": "admin1@example.com",
+            "phone_number": "9999999991",
+            "password": "admin@123",
+            "register_number": "ADMIN001",
+            "rit_username": "admin1",
+        },
+        {
+            "name": "Admin Two",
+            "email": "admin2@example.com",
+            "phone_number": "9999999992",
+            "password": "admin@2026",
+            "register_number": "ADMIN002",
+            "rit_username": "admin2",
+        },
+    ]
+
+    for admin in default_admins:
+        existing_user = db.execute(
+            "SELECT id FROM users WHERE email = ?",
+            (admin["email"],),
+        ).fetchone()
+        password_hash = generate_password_hash(admin["password"])
+        values = (
+            admin["name"],
+            admin["email"],
+            admin["phone_number"],
+            password_hash,
+            "admin",
+            admin["register_number"],
+            "CSE",
+            "20",
+            "Computer Science and Engineering",
+            "cse",
+            admin["rit_username"],
+            "Rajalakshmi Institute of Technology",
+            "internal",
+            1,
+        )
+        if existing_user is None:
+            db.execute(
+                """
+                INSERT INTO users (
+                    name, email, phone_number, password_hash, role,
+                    register_number, course, department_code, department_name, department_slug,
+                    rit_username, college_name, user_type, is_active
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                values,
+            )
+        else:
+            db.execute(
+                """
+                UPDATE users
+                SET name = ?, phone_number = ?, password_hash = ?, role = ?,
+                    register_number = ?, course = ?, department_code = ?, department_name = ?, department_slug = ?,
+                    rit_username = ?, college_name = ?, user_type = ?, is_active = ?
+                WHERE id = ?
+                """,
+                (
+                    admin["name"],
+                    admin["phone_number"],
+                    password_hash,
+                    "admin",
+                    admin["register_number"],
+                    "CSE",
+                    "20",
+                    "Computer Science and Engineering",
+                    "cse",
+                    admin["rit_username"],
+                    "Rajalakshmi Institute of Technology",
+                    "internal",
+                    1,
+                    existing_user["id"],
+                ),
+            )
+    db.commit()
 
 
 def parse_datetime_value(value: str | None) -> datetime | None:
@@ -3443,6 +3439,8 @@ def init_db() -> None:
     db.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_rit_username_unique ON users(rit_username) WHERE rit_username IS NOT NULL AND rit_username != ''")
     db.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_external_email_unique ON users(external_email) WHERE external_email IS NOT NULL AND external_email != ''")
     db.commit()
+
+    ensure_default_admin_users()
 
     db.commit()
 
