@@ -2601,7 +2601,11 @@ def build_identity_payload(verification_url: str) -> dict[str, str]:
     identity["register_number"] = department["register_number_digits"]
 
     name_parts = identity.get("student_name", "").strip().split()
-    cleaned_parts = [p.replace('.', '') for p in name_parts if p.replace('.', '').strip()]
+    cleaned_parts = []
+    for part in name_parts:
+        normalized_part = ''.join(ch for ch in part.lower() if ch.isalnum())
+        if normalized_part:
+            cleaned_parts.append(normalized_part)
     first_name = "student"
     for part in cleaned_parts:
         if len(part) > 2:
@@ -2609,6 +2613,7 @@ def build_identity_payload(verification_url: str) -> dict[str, str]:
             break
     if first_name == "student" and cleaned_parts:
         first_name = cleaned_parts[0].lower()
+    first_name = first_name[:9] or "student"
 
     reg_digits = department["register_number_digits"]
     if len(reg_digits) >= 10:
