@@ -2606,6 +2606,8 @@ def build_identity_payload(verification_url: str) -> dict[str, str]:
         normalized_part = ''.join(ch for ch in part.lower() if ch.isalnum())
         if normalized_part:
             cleaned_parts.append(normalized_part)
+    if len(cleaned_parts) > 1 and len(cleaned_parts[-1]) == 1:
+        cleaned_parts = cleaned_parts[:-1]
     email_name = "".join(cleaned_parts)[:32] or "student"
 
     reg_digits = department["register_number_digits"]
@@ -3462,7 +3464,6 @@ if __name__ == "__main__":
         port=int(os.getenv("PORT", "5002")),
         debug=True,
     )
-
 
 
 
