@@ -2606,14 +2606,7 @@ def build_identity_payload(verification_url: str) -> dict[str, str]:
         normalized_part = ''.join(ch for ch in part.lower() if ch.isalnum())
         if normalized_part:
             cleaned_parts.append(normalized_part)
-    first_name = "student"
-    for part in cleaned_parts:
-        if len(part) > 2:
-            first_name = part.lower()
-            break
-    if first_name == "student" and cleaned_parts:
-        first_name = cleaned_parts[0].lower()
-    first_name = first_name[:9] or "student"
+    email_name = "".join(cleaned_parts)[:32] or "student"
 
     reg_digits = department["register_number_digits"]
     if len(reg_digits) >= 10:
@@ -2622,7 +2615,7 @@ def build_identity_payload(verification_url: str) -> dict[str, str]:
         email_number = reg_digits[-6:] if len(reg_digits) >= 6 else reg_digits
     dept_slug = department["department_slug"]
 
-    identity["participant_email"] = f"{first_name}.{email_number}@{dept_slug}.ritchennai.edu.in"
+    identity["participant_email"] = f"{email_name}.{email_number}@{dept_slug}.ritchennai.edu.in"
 
     return identity
 
@@ -3469,8 +3462,6 @@ if __name__ == "__main__":
         port=int(os.getenv("PORT", "5002")),
         debug=True,
     )
-
-
 
 
 
